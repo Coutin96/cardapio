@@ -40,9 +40,9 @@
         }
 
         .produto img {
-            max-width: 100%;
-            height: auto;
-            flex-shrink: 0; /* Impede que a imagem encolha */
+            width: 150px; /* Largura fixa para sincronizar tamanho */
+            height: 150px; /* Altura fixa para sincronizar tamanho */
+            object-fit: cover; /* Corta a imagem para se ajustar ao tamanho */
             margin-bottom: 10px; /* Espaçamento entre a imagem e o conteúdo */
         }
 
@@ -98,7 +98,7 @@
     <script>
         // Inicializa o Supabase
         const supabaseUrl = 'https://chcysijsjivahlaekhlw.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNoY3lzaWpzaml2YWhsYWVraGx3Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcyODk3NzgwNywiZXhwIjoyMDQ0NTUzODA3fQ.vGRBGeF8y-GU2hNeuNu4XW1CSu1Pa0j747UZicUrifM';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNoY3lzaWpzaml2YWhsYWVraGx3Iiwicm9zZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcyODk3NzgwNywiZXhwIjoyMDQ0NTUzODA3fQ.vGRBGeF8y-GU2hNeuNu4XW1CSu1Pa0j747UZicUrifM';
         const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
         document.addEventListener('DOMContentLoaded', async function() {
@@ -127,7 +127,6 @@
                         <p>Preço: R$ ${produto.preco.toFixed(2)}</p>
                         <p>${produto.descricao}</p>
                         <button onclick="adicionarAoCarrinho(${produto.id}, '${produto.nome}', ${produto.preco}, '${produto.foto_url}')">Adicionar ao Carrinho</button>
-                        <button onclick="removerDoCarrinho(${produto.id})">Remover do Carrinho</button>
                     </div>
                 `;
 
@@ -137,25 +136,42 @@
 
         // Função para adicionar um produto ao carrinho
         function adicionarAoCarrinho(id, nome, preco, foto_url) {
-            const produto = { id, nome, preco, foto_url };
             let carrinho = JSON.parse(localStorage.getItem('carrinho')) || [];
             const produtoExistente = carrinho.find(p => p.id === id);
 
             if (produtoExistente) {
-                alert('Produto já está no carrinho.');
+                // Incrementa a quantidade se o produto já estiver no carrinho
+                produtoExistente.quantidade += 1;
             } else {
+                // Adiciona novo produto com quantidade 1
+                const produto = { id, nome, preco, foto_url, quantidade: 1 };
                 carrinho.push(produto);
-                localStorage.setItem('carrinho', JSON.stringify(carrinho));
-                alert('Produto adicionado ao carrinho!');
             }
+
+            localStorage.setItem('carrinho', JSON.stringify(carrinho));
+            alert('Produto adicionado ao carrinho! Quantidade: ' + (produtoExistente ? produtoExistente.quantidade : 1));
         }
 
         // Função para remover um produto do carrinho
         function removerDoCarrinho(id) {
             let carrinho = JSON.parse(localStorage.getItem('carrinho')) || [];
-            carrinho = carrinho.filter(produto => produto.id !== id);
+            const produtoExistente = carrinho.find(produto => produto.id === id);
+
+            if (produtoExistente) {
+                if (produtoExistente.quantidade > 1) {
+                    // Decrementa a quantidade
+                    produtoExistente.quantidade -= 1;
+                    alert('Uma unidade removida do carrinho! Quantidade restante: ' + produtoExistente.quantidade);
+                } else {
+                    // Remove o produto se a quantidade for 1
+                    carrinho = carrinho.filter(produto => produto.id !== id);
+                    alert('Produto removido do carrinho!');
+                }
+            } else {
+                alert('Produto não encontrado no carrinho!');
+            }
+
             localStorage.setItem('carrinho', JSON.stringify(carrinho));
-            alert('Produto removido do carrinho!');
         }
     </script>
 </body>
