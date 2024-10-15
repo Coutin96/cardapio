@@ -41,6 +41,8 @@
     <p><a href="catalogo.html">Catalogo</a></p>
     
     <script>
+        
+    document.addEventListener('DOMContentLoaded', function() {
         // Inicializa o Supabase
         const supabaseUrl = 'https://yixlhjlwdrbppnqffirg.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlpeGxoamx3ZHJicHBucWZmaXJnIiwicm9zZSI6ImFub24iLCJpYXQiOjE3Mjg5NTExODYsImV4cCI6MjA0NDUyNzE4Nn0.3UVbhExhEuL8PLojlc68Gw8XuQlJsqJFYN4CqUEk8Cc';
@@ -97,7 +99,8 @@
             };
 
             reader.readAsDataURL(foto);
-        });
+        })
+    };
     </script>
 </body>
 </html>
