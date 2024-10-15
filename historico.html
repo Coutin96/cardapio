@@ -50,13 +50,12 @@
 
         // Função para buscar o histórico de pedidos
         async function buscarHistorico() {
-            const numeroMesa = 1; // Substitua pelo número da mesa que você deseja buscar
+            const numeroMesa = localStorage.getItem('numeroMesa'); // Recupera o número da mesa do localStorage
 
-            // Busca todos os pedidos da mesa específica
             const { data: pedidos, error: pedidosError } = await supabaseClient
                 .from('itens_pedido')
                 .select('*')
-                .eq('numero_mesa', numeroMesa) // Filtra pelos pedidos da mesa específica
+                .eq('numero_mesa', numeroMesa) // Filtra os pedidos pela mesa
                 .order('id', { ascending: false });
 
             if (pedidosError) {
@@ -70,7 +69,7 @@
 
             for (const pedido of pedidos) {
                 // Busca a informação do produto correspondente
-                const { data: produto, error: produtoError } = await supabaseClient
+                const { data: produtos, error: produtoError } = await supabaseClient
                     .from('produtos')
                     .select('*')
                     .eq('id', pedido.produto_id)
@@ -81,14 +80,13 @@
                     continue; // Se houver erro, pula para o próximo pedido
                 }
 
-                // Cria a div do pedido
                 const divPedido = document.createElement('div');
                 divPedido.classList.add('pedido');
                 divPedido.innerHTML = `
                     <h2>Pedido ID: ${pedido.id}</h2>
                     <p>Número da Mesa: ${pedido.numero_mesa}</p>
-                    <p>Produto: ${produto.nome}</p>
-                    <img src="${produto.foto_url}" alt="Imagem do Produto" class="produto-imagem">
+                    <p>Produto: ${produtos.nome}</p>
+                    <img src="${produtos.foto_url}" alt="Imagem do Produto" class="produto-imagem">
                     <p>Quantidade: ${pedido.quantidade}</p>
                     <p>Valor Unitário: R$ ${pedido.valor_unitario.toFixed(2)}</p>
                     <p>Valor Total: R$ ${(pedido.valor_unitario * pedido.quantidade).toFixed(2)}</p>
