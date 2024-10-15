@@ -45,7 +45,7 @@
             // Inicializa o Supabase
             const supabaseUrl = 'https://yixlhjlwdrbppnqffirg.supabase.co';
             const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlpeGxoamx3ZHJicHBucWZmaXJnIiwicm9zZSI6ImFub24iLCJpYXQiOjE3Mjg5NTExODYsImV4cCI6MjA0NDUyNzE4Nn0.3UVbhExhEuL8PLojlc68Gw8XuQlJsqJFYN4CqUEk8Cc';
-            const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+            const supabase = supabase.createClient(supabaseUrl, supabaseKey); // Inicialização do Supabase
 
             // Função para mostrar a prévia do produto
             document.getElementById('foto').addEventListener('change', function (event) {
@@ -73,19 +73,19 @@
 
             // Função para adicionar produto
             document.getElementById('form-adicionar-produto').addEventListener('submit', async (e) => {
-                e.preventDefault();
+                e.preventDefault(); // Impede o envio do formulário
                 const nome = document.getElementById('nome').value;
                 const preco = parseFloat(document.getElementById('preco').value);
                 const foto = document.getElementById('foto').files[0];
                 const descricao = document.getElementById('descricao').value;
-                const reader = new FileReader();
 
+                const reader = new FileReader();
                 reader.onloadend = async () => {
                     const fotoUrl = reader.result; // Armazena a imagem em Base64
 
                     // Adiciona o produto ao banco de dados
                     const { data, error } = await supabase
-                        .from('Produtos')
+                        .from('produtos') // Ajuste aqui para a tabela correta
                         .insert([{ nome, preco, foto_url: fotoUrl, descricao }]);
 
                     if (error) {
@@ -97,9 +97,14 @@
                     }
                 };
 
-                reader.readAsDataURL(foto);
+                // Lê a imagem como URL
+                if (foto) {
+                    reader.readAsDataURL(foto);
+                } else {
+                    console.error('Nenhuma imagem foi selecionada.');
+                }
             });
-        }); // Corrigido aqui
+        }); // Fecha o DOMContentLoaded
     </script>
 </body>
 </html>
