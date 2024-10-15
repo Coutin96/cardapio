@@ -92,6 +92,24 @@
             margin: 20px 0;
             text-align: center;
         }
+        
+        /* Estilo para o botão de limpar pedido */
+        .btn-limpar {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .btn-limpar button {
+            background-color: #dc3545; /* Cor do botão de limpar */
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-limpar button:hover {
+            background-color: #c82333; /* Cor do botão de limpar ao passar o mouse */
+        }
     </style>
 </head>
 <body>
@@ -103,7 +121,11 @@
         <input type="text" id="mesa" placeholder="Número da mesa" required>
     </div>
 
-    <div style="text-align: center;"><a href="catalogo.html"><b>Voltar para o catalogo</b></a></div>
+    <div class="btn-limpar">
+        <button id="limpar-pedido">Limpar Pedido</button>
+    </div>
+
+    <div style="text-align: center;"><a href="catalogo.html"><b>Voltar para o catálogo</b></a></div>
 
     <div class="btn-finalizar">
         <button id="finalizar-pedido">Finalizar Pedido</button>
@@ -199,6 +221,13 @@
             renderCarrinho();
         }
 
+        // Limpa o carrinho
+        function limparCarrinho() {
+            carrinho = [];
+            localStorage.removeItem('carrinho'); // Limpa o carrinho do localStorage
+            renderCarrinho(); // Atualiza a interface
+        }
+
         // Busca produtos do localStorage e exibe no carrinho
         document.addEventListener('DOMContentLoaded', () => {
             const produtosSalvos = JSON.parse(localStorage.getItem('carrinho')) || [];
@@ -220,9 +249,9 @@
                 return;
             }
 
-            // Salva os itens do pedido na tabela itens_pedido
+            // Salva os produtos do pedido no banco de dados
             for (const produto of carrinho) {
-                const { data, error } = await supabaseClient
+                const { data, error } = await supabase
                     .from('itens_pedido')
                     .insert([
                         {
@@ -234,16 +263,19 @@
                     ]);
 
                 if (error) {
-                    alert('Ocorreu um erro ao adicionar o item ao pedido. Tente novamente.');
-                    console.error(error);
-                    return;
+                    console.error('Erro ao salvar pedido:', error);
                 }
             }
 
-            alert(`Pedido finalizado com sucesso! Mesa: ${mesa}`);
-            localStorage.removeItem('carrinho'); // Limpa o carrinho após finalizar o pedido
-            carrinho = [];
-            renderCarrinho();
+            // Limpa o carrinho após finalizar o pedido
+            limparCarrinho();
+
+            alert('Pedido finalizado com sucesso!');
+        });
+
+        // Adiciona evento para o botão de limpar pedido
+        document.getElementById('limpar-pedido').addEventListener('click', () => {
+            limparCarrinho(); // Limpa o carrinho
         });
     </script>
 </body>
