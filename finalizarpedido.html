@@ -121,11 +121,7 @@
         <input type="text" id="mesa" placeholder="Número da mesa" required>
     </div>
 
-    
-
     <div style="text-align: center;"><a href="catalogo.html"><b>Voltar para o catálogo</b></a></div>
-
-    <p></p>
 
     <div class="btn-limpar">
         <button id="limpar-pedido">Limpar Pedido</button>
@@ -205,6 +201,9 @@
                 carrinho.push(novoProduto);
             }
 
+            // Atualiza o localStorage
+            localStorage.setItem('carrinho', JSON.stringify(carrinho));
+
             renderCarrinho();
         }
 
@@ -222,13 +221,16 @@
                 }
             }
 
+            // Atualiza o localStorage
+            localStorage.setItem('carrinho', JSON.stringify(carrinho));
+
             renderCarrinho();
         }
 
         // Limpa o carrinho
         function limparCarrinho() {
             carrinho = [];
-            localStorage.removeItem('carrinho'); // Limpa o carrinho do localStorage
+            localStorage.setItem('carrinho', JSON.stringify(carrinho)); // Limpa o carrinho do localStorage
             renderCarrinho(); // Atualiza a interface
         }
 
@@ -253,31 +255,24 @@
                 return;
             }
 
-            // Salva os produtos do pedido no banco de dados
-            for (const produto of carrinho) {
-                const { data, error } = await supabase
-                    .from('itens_pedido')
-                    .insert([
-                        {
-                            produto_id: produto.id,
-                            numero_mesa: mesa,
-                            quantidade: produto.quantidade,
-                            valor_unitario: produto.preco
-                        }
-                    ]);
+            const { data, error } = await supabaseClient
+                .from('itens_pedido')
+                .insert(carrinho.map(produto => ({
+                    produto_id: produto.id,
+                    numero_mesa: mesa,
+                    quantidade: produto.quantidade,
+                    valor_unitario: produto.preco
+                })));
 
-                if (error) {
-                    console.error('Erro ao salvar pedido:', error);
-                }
+            if (error) {
+                alert('Erro ao finalizar pedido: ' + error.message);
+            } else {
+                alert('Pedido finalizado com sucesso!');
+                limparCarrinho(); // Limpa o carrinho após finalizar
             }
-
-            // Limpa o carrinho após finalizar o pedido
-            limparCarrinho();
-
-            alert('Pedido finalizado com sucesso!');
         });
 
-        // Adiciona evento para o botão de limpar pedido
+        // Evento para limpar pedido
         document.getElementById('limpar-pedido').addEventListener('click', () => {
             limparCarrinho(); // Limpa o carrinho
         });
