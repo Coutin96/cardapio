@@ -34,11 +34,26 @@
             width: 100%;
             max-width: 200px; /* Tamanho máximo dos produtos */
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            display: flex; /* Flexbox para alinhar itens */
+            flex-direction: column; /* Coloca os itens em coluna */
+            align-items: center; /* Centraliza os itens */
         }
 
         .produto img {
             max-width: 100%;
             height: auto;
+            flex-shrink: 0; /* Impede que a imagem encolha */
+            margin-bottom: 10px; /* Espaçamento entre a imagem e o conteúdo */
+        }
+
+        .informacoes {
+            display: flex;
+            flex-direction: column; /* Coloca as informações em coluna */
+            align-items: center; /* Centraliza as informações */
+        }
+
+        .informacoes button {
+            margin: 5px; /* Espaçamento entre os botões */
         }
 
         @media (min-width: 600px) {
@@ -107,11 +122,13 @@
 
                 divProduto.innerHTML = `
                     <img src="${produto.foto_url}" alt="Imagem do Produto">
-                    <h3>${produto.nome}</h3>
-                    <p>Preço: R$ ${produto.preco.toFixed(2)}</p>
-                    <p>${produto.descricao}</p>
-                    <button onclick="adicionarAoCarrinho(${produto.id}, '${produto.nome}', ${produto.preco}, '${produto.foto_url}')">Adicionar ao Carrinho</button>
-                    <button onclick="removerDoCarrinho(${produto.id})">Remover do Carrinho</button>
+                    <div class="informacoes">
+                        <h3>${produto.nome}</h3>
+                        <p>Preço: R$ ${produto.preco.toFixed(2)}</p>
+                        <p>${produto.descricao}</p>
+                        <button onclick="adicionarAoCarrinho(${produto.id}, '${produto.nome}', ${produto.preco}, '${produto.foto_url}')">Adicionar ao Carrinho</button>
+                        <button onclick="removerDoCarrinho(${produto.id})">Remover do Carrinho</button>
+                    </div>
                 `;
 
                 catalogo.appendChild(divProduto);
