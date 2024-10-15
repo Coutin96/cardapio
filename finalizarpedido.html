@@ -167,7 +167,6 @@
                 produtoExistente.quantidade += 1;
             } else {
                 // Se o produto não existe, adicione-o com quantidade 1
-                // (Você precisa definir o objeto produto com suas propriedades: id, nome, preco e foto_url)
                 const novoProduto = {
                     id: id,
                     nome: "Produto " + id, // Substitua com a lógica para obter o nome do produto
@@ -219,7 +218,7 @@
                 return;
             }
 
-            // Calcula a quantidade total de produtos e o valor total
+            // Calcula a quantidade total de produtos e o valor total do pedido
             let quantidadeTotal = 0;
             let valorTotal = 0;
 
@@ -228,11 +227,11 @@
                 valorTotal += produto.preco * produto.quantidade;
             });
 
-            // Insere o pedido no banco de dados
+            // Salva o pedido no banco de dados
             const { data, error } = await supabaseClient
                 .from('pedidos')
                 .insert([
-                    { 
+                    {
                         numero_mesa: mesa,
                         quantidade_produtos: quantidadeTotal,
                         valor_total: valorTotal
@@ -240,14 +239,15 @@
                 ]);
 
             if (error) {
-                console.error('Erro ao inserir pedido:', error);
                 alert('Ocorreu um erro ao finalizar o pedido. Tente novamente.');
-            } else {
-                alert(`Pedido finalizado com sucesso! Mesa: ${mesa}`);
-                localStorage.removeItem('carrinho'); // Limpa o carrinho após finalizar o pedido
-                carrinho = [];
-                renderCarrinho();
+                console.error(error);
+                return;
             }
+
+            alert(`Pedido finalizado com sucesso! Mesa: ${mesa}`);
+            localStorage.removeItem('carrinho'); // Limpa o carrinho após finalizar o pedido
+            carrinho = [];
+            renderCarrinho();
         });
     </script>
 </body>
