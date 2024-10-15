@@ -45,6 +45,13 @@
             margin-left: 10px; /* Espaçamento entre a imagem e o nome */
         }
 
+        /* Estilo para o preço e total */
+        .preco-container {
+            display: flex;
+            flex-direction: column; /* Alinha o preço e o total em coluna */
+            align-items: flex-end; /* Alinha à direita */
+        }
+
         .produto-carrinho button {
             background-color: #ff4d4d;
             color: white;
@@ -119,7 +126,10 @@
                         <img src="${produto.foto_url}" alt="Imagem do Produto">
                         <span class="produto-nome">${produto.nome}</span>
                     </div>
-                    <span>R$ ${produto.preco.toFixed(2)}</span>
+                    <div class="preco-container">
+                        <span>R$ ${produto.preco.toFixed(2)}</span>
+                        <span class="total-produto">Total: R$ ${produto.preco.toFixed(2)}</span>
+                    </div>
                     <button onclick="removerDoCarrinho(${produto.id})">Remover</button>
                 `;
 
