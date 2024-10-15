@@ -112,15 +112,8 @@
                     return;
                 }
 
-                // Obtém a URL da imagem carregada
-                const publicURL = supabaseClient.storage
-                    .from('produtos')
-                    .getPublicUrl(storageData.path).publicURL;
-
-                if (!publicURL) {
-                    alert('Erro ao obter a URL da imagem. Tente novamente.');
-                    return;
-                }
+                // Adiciona o caminho completo da URL manualmente
+                const publicURL = `${supabaseUrl}/storage/v1/object/public/produtos/${storageData.path}`;
 
                 // Adiciona o produto ao banco de dados
                 const { data, error } = await supabaseClient
