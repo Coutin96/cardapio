@@ -6,13 +6,25 @@
     <title>Catálogo de Produtos</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/umd/supabase.js"></script>
     <style>
+        /* Estilos globais */
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+
+        h1, h2 {
+            text-align: center; /* Centraliza os títulos */
+        }
+
         /* Estilos para o catálogo */
         .catalogo {
             display: flex;
             flex-wrap: wrap;
-            justify-content: space-around;
+            justify-content: flex-start; /* Alinha os itens da esquerda para a direita */
             gap: 20px;
             padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto; /* Centraliza o catálogo na tela */
         }
 
         .produto {
@@ -40,13 +52,33 @@
                 width: 30%; /* Produtos ocupam 30% do espaço da tela em telas ainda maiores */
             }
         }
+
+        /* Link para cadastrar produtos */
+        .link-cadastrar {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .link-cadastrar a {
+            text-decoration: none;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border-radius: 5px;
+        }
+
+        .link-cadastrar a:hover {
+            background-color: #0056b3;
+        }
     </style>
 </head>
 <body>
     <h1>Catálogo de Produtos</h1>
     <div class="catalogo" id="catalogo"></div>
 
-    <p><a href="index.html">Cadastrar Produto</a></p>
+    <div class="link-cadastrar">
+        <a href="index.html">Cadastrar Produto</a>
+    </div>
 
     <script>
         // Inicializa o Supabase
