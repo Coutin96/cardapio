@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastrar Produto</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/umd/supabase.js"></script>
+    <style>
+        /* Estilo para a prévia do produto */
+        .preview {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-top: 20px;
+            display: none; /* Inicialmente oculto */
+            text-align: center;
+        }
+        .preview img {
+            max-width: 100px;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Cadastrar Produto</h1>
+    
+    <form id="form-adicionar-produto">
+        <input type="text" id="nome" placeholder="Nome do Produto" required>
+        <input type="number" id="preco" placeholder="Preço" required step="0.01">
+        <textarea id="descricao" placeholder="Descrição do Produto" required></textarea>
+        <input type="file" id="foto" accept="image/*" required>
+        <button type="submit">Adicionar Produto</button>
+    </form>
+
+    <div class="preview" id="preview">
+        <h3 id="preview-nome"></h3>
+        <img id="preview-foto" src="" alt="Prévia do Produto">
+        <p id="preview-preco"></p>
+        <p id="preview-descricao"></p>
+    </div>
+
+    <script>
+        // Inicializa o Supabase
+        const supabaseUrl = 'https://yixlhjlwdrbppnqffirg.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlpeGxoamx3ZHJicHBucWZmaXJnIiwicm9zZSI6ImFub24iLCJpYXQiOjE3Mjg5NTExODYsImV4cCI6MjA0NDUyNzE4Nn0.3UVbhExhEuL8PLojlc68Gw8XuQlJsqJFYN4CqUEk8Cc';
+        const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+        // Função para mostrar a prévia do produto
+        document.getElementById('foto').addEventListener('change', function (event) {
+            const file = event.target.files[0];
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                document.getElementById('preview-foto').src = e.target.result;
+                document.getElementById('preview').style.display = 'block'; // Mostra a prévia
+            };
+            reader.readAsDataURL(file);
+        });
+
+        // Atualiza a prévia com o nome, preço e descrição
+        document.getElementById('nome').addEventListener('input', function () {
+            document.getElementById('preview-nome').textContent = this.value;
+        });
+
+        document.getElementById('preco').addEventListener('input', function () {
+            document.getElementById('preview-preco').textContent = `Preço: R$ ${parseFloat(this.value).toFixed(2)}`;
+        });
+
+        document.getElementById('descricao').addEventListener('input', function () {
+            document.getElementById('preview-descricao').textContent = this.value;
+        });
+
+        // Função para adicionar produto
+        document.getElementById('form-adicionar-produto').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const nome = document.getElementById('nome').value;
+            const preco = parseFloat(document.getElementById('preco').value);
+            const foto = document.getElementById('foto').files[0];
+            const descricao = document.getElementById('descricao').value;
+            const reader = new FileReader();
+
+            reader.onloadend = async () => {
+                const fotoUrl = reader.result; // Armazena a imagem em Base64
+
+                // Adiciona o produto ao banco de dados
+                const { data, error } = await supabase
+                    .from('Produtos')
+                    .insert([{ nome, preco, foto_url: fotoUrl, descricao }]);
+
+                if (error) {
+                    console.error('Erro ao adicionar produto:', error);
+                } else {
+                    alert('Produto adicionado com sucesso!');
+                    e.target.reset();
+                    document.getElementById('preview').style.display = 'none'; // Oculta a prévia
+                }
+            };
+
+            reader.readAsDataURL(foto);
+        });
+    </script>
+</body>
+</html>
