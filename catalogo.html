@@ -56,6 +56,16 @@
             margin: 5px; /* Espaçamento entre os botões */
         }
 
+        .quantidade {
+            display: flex;
+            align-items: center; /* Centraliza verticalmente */
+            margin: 5px 0; /* Espaçamento vertical */
+        }
+
+        .quantidade button {
+            width: 30px; /* Largura dos botões de quantidade */
+        }
+
         @media (min-width: 600px) {
             .produto {
                 width: 48%; /* Produtos ocupam 48% do espaço da tela em dispositivos maiores */
@@ -98,7 +108,7 @@
     <script>
         // Inicializa o Supabase
         const supabaseUrl = 'https://chcysijsjivahlaekhlw.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNoY3lzaWpzaml2YWhsYWVraGx3Iiwicm9zZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcyODk3NzgwNywiZXhwIjoyMDQ0NTUzODA3fQ.vGRBGeF8y-GU2hNeuNu4XW1CSu1Pa0j747UZicUrifM';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNoY3lzaWpzaml2YWhsYWVraGx3Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcyODk3NzgwNywiZXhwIjoyMDQ0NTUzODA3fQ.vGRBGeF8y-GU2hNeuNu4XW1CSu1Pa0j747UZicUrifM';
         const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
         document.addEventListener('DOMContentLoaded', async function() {
@@ -126,6 +136,11 @@
                         <h3>${produto.nome}</h3>
                         <p>Preço: R$ ${produto.preco.toFixed(2)}</p>
                         <p>${produto.descricao}</p>
+                        <div class="quantidade">
+                            <button onclick="removerDoCarrinho(${produto.id})">-</button>
+                            <span id="quantidade-${produto.id}">0</span>
+                            <button onclick="adicionarAoCarrinho(${produto.id}, '${produto.nome}', ${produto.preco}, '${produto.foto_url}')">+</button>
+                        </div>
                         <button onclick="adicionarAoCarrinho(${produto.id}, '${produto.nome}', ${produto.preco}, '${produto.foto_url}')">Adicionar ao Carrinho</button>
                     </div>
                 `;
@@ -149,6 +164,7 @@
             }
 
             localStorage.setItem('carrinho', JSON.stringify(carrinho));
+            document.getElementById(`quantidade-${id}`).innerText = produtoExistente ? produtoExistente.quantidade : 1;
             alert('Produto adicionado ao carrinho! Quantidade: ' + (produtoExistente ? produtoExistente.quantidade : 1));
         }
 
@@ -172,6 +188,7 @@
             }
 
             localStorage.setItem('carrinho', JSON.stringify(carrinho));
+            document.getElementById(`quantidade-${id}`).innerText = produtoExistente ? produtoExistente.quantidade : 0;
         }
     </script>
 </body>
