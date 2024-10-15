@@ -206,7 +206,7 @@
         });
 
         // Finaliza o pedido
-        document.getElementById('finalizar-pedido').addEventListener('click', () => {
+        document.getElementById('finalizar-pedido').addEventListener('click', async () => {
             const mesa = document.getElementById('mesa').value;
 
             if (carrinho.length === 0) {
@@ -219,12 +219,35 @@
                 return;
             }
 
-            // Aqui você pode adicionar a lógica para salvar o pedido no banco de dados ou realizar outras ações necessárias
+            // Calcula a quantidade total de produtos e o valor total
+            let quantidadeTotal = 0;
+            let valorTotal = 0;
 
-            alert(`Pedido finalizado com sucesso! Mesa: ${mesa}`);
-            localStorage.removeItem('carrinho'); // Limpa o carrinho após finalizar o pedido
-            carrinho = [];
-            renderCarrinho();
+            carrinho.forEach(produto => {
+                quantidadeTotal += produto.quantidade;
+                valorTotal += produto.preco * produto.quantidade;
+            });
+
+            // Insere o pedido no banco de dados
+            const { data, error } = await supabaseClient
+                .from('pedidos')
+                .insert([
+                    { 
+                        numero_mesa: mesa,
+                        quantidade_produtos: quantidadeTotal,
+                        valor_total: valorTotal
+                    }
+                ]);
+
+            if (error) {
+                console.error('Erro ao inserir pedido:', error);
+                alert('Ocorreu um erro ao finalizar o pedido. Tente novamente.');
+            } else {
+                alert(`Pedido finalizado com sucesso! Mesa: ${mesa}`);
+                localStorage.removeItem('carrinho'); // Limpa o carrinho após finalizar o pedido
+                carrinho = [];
+                renderCarrinho();
+            }
         });
     </script>
 </body>
