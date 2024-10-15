@@ -81,6 +81,7 @@
             // Função para adicionar produto
             document.getElementById('form-adicionar-produto').addEventListener('submit', async (e) => {
                 e.preventDefault(); // Impede o envio do formulário
+
                 const nome = document.getElementById('nome').value;
                 const preco = parseFloat(document.getElementById('preco').value);
                 const foto = document.getElementById('foto').files[0];
@@ -88,6 +89,12 @@
 
                 if (!foto) {
                     alert('Por favor, selecione uma imagem.');
+                    return;
+                }
+
+                // Verifica o tamanho do arquivo (máximo 5 MB)
+                if (foto.size > 5 * 1024 * 1024) {
+                    alert('O arquivo deve ter menos de 5 MB.');
                     return;
                 }
 
