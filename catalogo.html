@@ -77,7 +77,7 @@
     <div class="catalogo" id="catalogo"></div>
 
     <div class="link-finalizar">
-        <a href="finalizar-pedido.html">Finalizar Pedido</a>
+        <a href="finalizarpedido.html">Finalizar Pedido</a>
     </div>
 
     <script>
@@ -111,6 +111,7 @@
                     <p>Preço: R$ ${produto.preco.toFixed(2)}</p>
                     <p>${produto.descricao}</p>
                     <button onclick="adicionarAoCarrinho(${produto.id}, '${produto.nome}', ${produto.preco}, '${produto.foto_url}')">Adicionar ao Carrinho</button>
+                    <button onclick="removerDoCarrinho(${produto.id})">Remover do Carrinho</button>
                 `;
 
                 catalogo.appendChild(divProduto);
@@ -130,6 +131,14 @@
                 localStorage.setItem('carrinho', JSON.stringify(carrinho));
                 alert('Produto adicionado ao carrinho!');
             }
+        }
+
+        // Função para remover um produto do carrinho
+        function removerDoCarrinho(id) {
+            let carrinho = JSON.parse(localStorage.getItem('carrinho')) || [];
+            carrinho = carrinho.filter(produto => produto.id !== id);
+            localStorage.setItem('carrinho', JSON.stringify(carrinho));
+            alert('Produto removido do carrinho!');
         }
     </script>
 </body>
