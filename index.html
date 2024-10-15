@@ -41,12 +41,12 @@
     <p><a href="catalogo.html">Catálogo</a></p>
     
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Inicializa o Supabase
-            const supabaseUrl = 'https://chcysijsjivahlaekhlw.supabase.co';
-            const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNoY3lzaWpzaml2YWhsYWVraGx3Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcyODk3NzgwNywiZXhwIjoyMDQ0NTUzODA3fQ.vGRBGeF8y-GU2hNeuNu4XW1CSu1Pa0j747UZicUrifM';
-            const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+        // Inicializa o Supabase
+        const supabaseUrl = 'https://chcysijsjivahlaekhlw.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNoY3lzaWpzaml2YWhsYWVraGx3Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcyODk3NzgwNywiZXhwIjoyMDQ0NTUzODA3fQ.vGRBGeF8y-GU2hNeuNu4XW1CSu1Pa0j747UZicUrifM';
+        const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
+        document.addEventListener('DOMContentLoaded', function() {
             // Função para mostrar a prévia do produto
             document.getElementById('foto').addEventListener('change', function(event) {
                 const file = event.target.files[0];
