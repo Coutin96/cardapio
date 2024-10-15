@@ -54,6 +54,20 @@
         const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
         document.addEventListener('DOMContentLoaded', function() {
+            // Função para criar o bucket se não existir
+            const createBucketIfNotExists = async (bucketName) => {
+                const { data, error } = await supabaseClient.storage.createBucket(bucketName, { 
+                    public: true // Defina como público se desejar
+                });
+                if (error && error.message !== 'Bucket already exists') {
+                    console.error('Erro ao criar o bucket:', error);
+                    alert('Erro ao criar o bucket. Tente novamente.');
+                }
+            };
+
+            // Criar o bucket de produtos
+            createBucketIfNotExists('produtos');
+
             // Função para mostrar a prévia do produto
             document.getElementById('foto').addEventListener('change', function(event) {
                 const file = event.target.files[0];
