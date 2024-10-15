@@ -18,6 +18,10 @@
             max-width: 100px;
             height: auto;
         }
+        /* Estilo do catálogo */
+        .catalogo {
+            margin-top: 40px;
+        }
     </style>
 </head>
 <body>
@@ -31,11 +35,14 @@
         <button type="submit">Adicionar Produto</button>
     </form>
 
-    <div class="preview" id="preview">
-        <h3 id="preview-nome"></h3>
-        <img id="preview-foto" src="" alt="Prévia do Produto">
-        <p id="preview-preco"></p>
-        <p id="preview-descricao"></p>
+    <div class="catalogo">
+        <h2>Catálogo</h2>
+        <div class="preview" id="preview">
+            <h3 id="preview-nome"></h3>
+            <img id="preview-foto" src="" alt="Prévia do Produto">
+            <p id="preview-preco"></p>
+            <p id="preview-descricao"></p>
+        </div>
     </div>
 
     <p><a href="catalogo.html">Catálogo</a></p>
@@ -44,7 +51,7 @@
         // Inicializa o Supabase
         const supabaseUrl = 'https://chcysijsjivahlaekhlw.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNoY3lzaWpzaml2YWhsYWVraGx3Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcyODk3NzgwNywiZXhwIjoyMDQ0NTUzODA3fQ.vGRBGeF8y-GU2hNeuNu4XW1CSu1Pa0j747UZicUrifM';
-        const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey); // Alterado para supabaseClient
+        const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
         document.addEventListener('DOMContentLoaded', function() {
             // Função para mostrar a prévia do produto
