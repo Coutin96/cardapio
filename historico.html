@@ -31,6 +31,11 @@
         .pedido p {
             margin: 5px 0;
         }
+
+        .produto-imagem {
+            max-width: 100px;
+            height: auto;
+        }
     </style>
 </head>
 <body>
@@ -45,13 +50,13 @@
 
         // Função para buscar o histórico de pedidos
         async function buscarHistorico() {
-            const { data, error } = await supabaseClient
+            const { data: pedidos, error: pedidosError } = await supabaseClient
                 .from('itens_pedido')
                 .select('*')
                 .order('id', { ascending: false });
 
-            if (error) {
-                console.error('Erro ao buscar histórico:', error);
+            if (pedidosError) {
+                console.error('Erro ao buscar histórico:', pedidosError);
                 return;
             }
 
@@ -59,18 +64,32 @@
             const historicoContainer = document.getElementById('historico');
             historicoContainer.innerHTML = '';
 
-            data.forEach(pedido => {
+            for (const pedido of pedidos) {
+                // Busca a informação do produto correspondente
+                const { data: produtos, error: produtoError } = await supabaseClient
+                    .from('produtos')
+                    .select('*')
+                    .eq('id', pedido.produto_id)
+                    .single(); // Usa .single() para pegar apenas um produto
+
+                if (produtoError) {
+                    console.error('Erro ao buscar produto:', produtoError);
+                    continue; // Se houver erro, pula para o próximo pedido
+                }
+
                 const divPedido = document.createElement('div');
                 divPedido.classList.add('pedido');
                 divPedido.innerHTML = `
                     <h2>Pedido ID: ${pedido.id}</h2>
                     <p>Número da Mesa: ${pedido.numero_mesa}</p>
-                    <p>Produto ID: ${pedido.produto_id}</p>
+                    <p>Produto: ${produtos.nome}</p>
+                    <img src="${produtos.foto_url}" alt="Imagem do Produto" class="produto-imagem">
                     <p>Quantidade: ${pedido.quantidade}</p>
                     <p>Valor Unitário: R$ ${pedido.valor_unitario.toFixed(2)}</p>
+                    <p>Valor Total: R$ ${(pedido.valor_unitario * pedido.quantidade).toFixed(2)}</p>
                 `;
                 historicoContainer.appendChild(divPedido);
-            });
+            }
         }
 
         // Chama a função para buscar o histórico ao carregar a página
