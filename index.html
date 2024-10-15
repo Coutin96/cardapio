@@ -48,10 +48,10 @@
             const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
             // Função para mostrar a prévia do produto
-            document.getElementById('foto').addEventListener('change', function (event) {
+            document.getElementById('foto').addEventListener('change', function(event) {
                 const file = event.target.files[0];
                 const reader = new FileReader();
-                reader.onload = function (e) {
+                reader.onload = function(e) {
                     document.getElementById('preview-foto').src = e.target.result;
                     document.getElementById('preview').style.display = 'block'; // Mostra a prévia
                 };
@@ -59,15 +59,15 @@
             });
 
             // Atualiza a prévia com o nome, preço e descrição
-            document.getElementById('nome').addEventListener('input', function () {
+            document.getElementById('nome').addEventListener('input', function() {
                 document.getElementById('preview-nome').textContent = this.value;
             });
 
-            document.getElementById('preco').addEventListener('input', function () {
+            document.getElementById('preco').addEventListener('input', function() {
                 document.getElementById('preview-preco').textContent = `Preço: R$ ${parseFloat(this.value).toFixed(2)}`;
             });
 
-            document.getElementById('descricao').addEventListener('input', function () {
+            document.getElementById('descricao').addEventListener('input', function() {
                 document.getElementById('preview-descricao').textContent = this.value;
             });
 
