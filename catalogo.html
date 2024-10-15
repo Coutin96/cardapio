@@ -53,13 +53,13 @@
             }
         }
 
-        /* Link para cadastrar produtos */
-        .link-cadastrar {
+        /* Link para finalizar pedido */
+        .link-finalizar {
             text-align: center;
             margin-top: 20px;
         }
 
-        .link-cadastrar a {
+        .link-finalizar a {
             text-decoration: none;
             padding: 10px 20px;
             background-color: #007bff;
@@ -67,7 +67,7 @@
             border-radius: 5px;
         }
 
-        .link-cadastrar a:hover {
+        .link-finalizar a:hover {
             background-color: #0056b3;
         }
     </style>
@@ -76,8 +76,8 @@
     <h1>Catálogo de Produtos</h1>
     <div class="catalogo" id="catalogo"></div>
 
-    <div class="link-cadastrar">
-        <a href="finalizarpedido.html">Finalizar Pedido</a>
+    <div class="link-finalizar">
+        <a href="finalizar-pedido.html">Finalizar Pedido</a>
     </div>
 
     <script>
@@ -110,11 +110,27 @@
                     <h3>${produto.nome}</h3>
                     <p>Preço: R$ ${produto.preco.toFixed(2)}</p>
                     <p>${produto.descricao}</p>
+                    <button onclick="adicionarAoCarrinho(${produto.id}, '${produto.nome}', ${produto.preco}, '${produto.foto_url}')">Adicionar ao Carrinho</button>
                 `;
 
                 catalogo.appendChild(divProduto);
             });
         });
+
+        // Função para adicionar um produto ao carrinho
+        function adicionarAoCarrinho(id, nome, preco, foto_url) {
+            const produto = { id, nome, preco, foto_url };
+            let carrinho = JSON.parse(localStorage.getItem('carrinho')) || [];
+            const produtoExistente = carrinho.find(p => p.id === id);
+
+            if (produtoExistente) {
+                alert('Produto já está no carrinho.');
+            } else {
+                carrinho.push(produto);
+                localStorage.setItem('carrinho', JSON.stringify(carrinho));
+                alert('Produto adicionado ao carrinho!');
+            }
+        }
     </script>
 </body>
 </html>
