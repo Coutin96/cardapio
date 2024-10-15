@@ -35,6 +35,16 @@
             height: auto;
         }
 
+        .produto-info {
+            flex: 1; /* Ocupa o espaço restante */
+            display: flex;
+            align-items: center; /* Centraliza verticalmente */
+        }
+
+        .produto-nome {
+            margin-left: 10px; /* Espaçamento entre a imagem e o nome */
+        }
+
         .produto-carrinho button {
             background-color: #ff4d4d;
             color: white;
@@ -86,7 +96,7 @@
     <script>
         // Inicializa o Supabase
         const supabaseUrl = 'https://chcysijsjivahlaekhlw.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNoY3lzaWpzaml2YWhsYWVraGx3Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcyODk3NzgwNywiZXhwIjoyMDQ0NTUzODA3fQ.vGRBGeF8y-GU2hNeuNu4XW1CSu1Pa0j747UZicUrifM';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNoY3lzaWpzaml2YWhsYWVraGx3Iiwicm9zZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcyODk3NzgwNywiZXhwIjoyMDQ0NTUzODA3fQ.vGRBGeF8y-GU2hNeuNu4XW1CSu1Pa0j747UZicUrifM';
         const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
         // Lista de produtos no carrinho
@@ -105,9 +115,9 @@
                 divProduto.classList.add('produto-carrinho');
 
                 divProduto.innerHTML = `
-                    <div>
+                    <div class="produto-info">
                         <img src="${produto.foto_url}" alt="Imagem do Produto">
-                        <span>${produto.nome}</span>
+                        <span class="produto-nome">${produto.nome}</span>
                     </div>
                     <span>R$ ${produto.preco.toFixed(2)}</span>
                     <button onclick="removerDoCarrinho(${produto.id})">Remover</button>
