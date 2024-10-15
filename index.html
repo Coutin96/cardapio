@@ -38,14 +38,14 @@
         <p id="preview-descricao"></p>
     </div>
 
-    <p><a href="catalogo.html">Catalogo</a></p>
+    <p><a href="catalogo.html">Catálogo</a></p>
     
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Inicializa o Supabase
-            const supabaseUrl = 'https://chcysijsjivahlaekhlw.supabase.co';
-            const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNoY3lzaWpzaml2YWhsYWVraGx3Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcyODk3NzgwNywiZXhwIjoyMDQ0NTUzODA3fQ.vGRBGeF8y-GU2hNeuNu4XW1CSu1Pa0j747UZicUrifM';
-            const supabase = supabase.createClient(supabaseUrl, supabaseKey); // Inicialização do Supabase
+            const supabaseUrl = 'https://yixlhjlwdrbppnqffirg.supabase.co';
+            const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlpeGxoamx3ZHJicHBucWZmaXJnIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcyODk1MTE4NiwiZXhwIjoyMDQ0NTI3MTg2fQ.5lGaaLGFR9p7DdccukBvzmrzFja6Tz-vFhlSPld21zc';
+            const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
             // Função para mostrar a prévia do produto
             document.getElementById('foto').addEventListener('change', function (event) {
@@ -79,29 +79,45 @@
                 const foto = document.getElementById('foto').files[0];
                 const descricao = document.getElementById('descricao').value;
 
-                const reader = new FileReader();
-                reader.onloadend = async () => {
-                    const fotoUrl = reader.result; // Armazena a imagem em Base64
+                if (!foto) {
+                    alert('Por favor, selecione uma imagem.');
+                    return;
+                }
 
-                    // Adiciona o produto ao banco de dados
-                    const { data, error } = await supabase
-                        .from('produtos') // Ajuste aqui para a tabela correta
-                        .insert([{ nome, preco, foto_url: fotoUrl, descricao }]);
+                // Carrega a imagem no Supabase Storage
+                const { data: storageData, error: storageError } = await supabase.storage
+                    .from('produtos') // Nome do bucket onde as imagens serão armazenadas
+                    .upload(`public/${foto.name}`, foto);
 
-                    if (error) {
-                        console.error('Erro ao adicionar produto:', error);
-                    } else {
-                        alert('Produto adicionado com sucesso!');
-                        e.target.reset();
-                        document.getElementById('preview').style.display = 'none'; // Oculta a prévia
-                    }
-                };
+                if (storageError) {
+                    console.error('Erro ao carregar a imagem:', storageError);
+                    alert('Erro ao carregar a imagem. Tente novamente.');
+                    return;
+                }
 
-                // Lê a imagem como URL
-                if (foto) {
-                    reader.readAsDataURL(foto);
+                // Obtém a URL da imagem carregada
+                const { publicURL, error: urlError } = supabase.storage
+                    .from('produtos')
+                    .getPublicUrl(storageData.path);
+
+                if (urlError) {
+                    console.error('Erro ao obter a URL da imagem:', urlError);
+                    alert('Erro ao obter a URL da imagem. Tente novamente.');
+                    return;
+                }
+
+                // Adiciona o produto ao banco de dados
+                const { data, error } = await supabase
+                    .from('clientes.produtos') // Referência à tabela no esquema 'clientes'
+                    .insert([{ nome, preco, foto_url: publicURL, descricao }]);
+
+                if (error) {
+                    console.error('Erro ao adicionar produto:', error);
+                    alert('Erro ao adicionar produto. Tente novamente.');
                 } else {
-                    console.error('Nenhuma imagem foi selecionada.');
+                    alert('Produto adicionado com sucesso!');
+                    e.target.reset();
+                    document.getElementById('preview').style.display = 'none'; // Oculta a prévia
                 }
             });
         }); // Fecha o DOMContentLoaded
