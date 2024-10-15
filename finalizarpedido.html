@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finalizar Pedido</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/umd/supabase.js"></script>
+    <style>
+        /* Estilos globais */
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        /* Estilos para o carrinho */
+        .carrinho {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .produto-carrinho {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #ccc;
+            padding: 10px 0;
+        }
+
+        .produto-carrinho img {
+            max-width: 50px;
+            height: auto;
+        }
+
+        .produto-carrinho button {
+            background-color: #ff4d4d;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+
+        .produto-carrinho button:hover {
+            background-color: #ff1a1a;
+        }
+
+        /* Total e botão finalizar */
+        .total {
+            text-align: right;
+            margin-top: 20px;
+        }
+
+        .btn-finalizar {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .btn-finalizar button {
+            background-color: #28a745;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-finalizar button:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+<body>
+    <h1>Finalizar Pedido</h1>
+    <div class="carrinho" id="carrinho"></div>
+
+    <div class="total">
+        <p>Total: R$ <span id="total-valor">0.00</span></p>
+    </div>
+
+    <div class="btn-finalizar">
+        <button id="finalizar-pedido">Finalizar Pedido</button>
+    </div>
+
+    <script>
+        // Inicializa o Supabase
+        const supabaseUrl = 'https://chcysijsjivahlaekhlw.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNoY3lzaWpzaml2YWhsYWVraGx3Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcyODk3NzgwNywiZXhwIjoyMDQ0NTUzODA3fQ.vGRBGeF8y-GU2hNeuNu4XW1CSu1Pa0j747UZicUrifM';
+        const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+
+        // Lista de produtos no carrinho
+        let carrinho = [];
+
+        // Exibe o carrinho de compras
+        function renderCarrinho() {
+            const carrinhoContainer = document.getElementById('carrinho');
+            const totalValorElement = document.getElementById('total-valor');
+            carrinhoContainer.innerHTML = '';
+            let total = 0;
+
+            carrinho.forEach(produto => {
+                total += produto.preco;
+                const divProduto = document.createElement('div');
+                divProduto.classList.add('produto-carrinho');
+
+                divProduto.innerHTML = `
+                    <div>
+                        <img src="${produto.foto_url}" alt="Imagem do Produto">
+                        <span>${produto.nome}</span>
+                    </div>
+                    <span>R$ ${produto.preco.toFixed(2)}</span>
+                    <button onclick="removerDoCarrinho(${produto.id})">Remover</button>
+                `;
+
+                carrinhoContainer.appendChild(divProduto);
+            });
+
+            totalValorElement.textContent = total.toFixed(2);
+        }
+
+        // Remove um produto do carrinho
+        function removerDoCarrinho(id) {
+            carrinho = carrinho.filter(produto => produto.id !== id);
+            renderCarrinho();
+        }
+
+        // Busca produtos do localStorage e exibe no carrinho
+        document.addEventListener('DOMContentLoaded', () => {
+            const produtosSalvos = JSON.parse(localStorage.getItem('carrinho')) || [];
+            carrinho = produtosSalvos;
+            renderCarrinho();
+        });
+
+        // Finaliza o pedido
+        document.getElementById('finalizar-pedido').addEventListener('click', () => {
+            if (carrinho.length === 0) {
+                alert('Carrinho vazio. Adicione produtos antes de finalizar.');
+                return;
+            }
+
+            // Aqui você pode adicionar a lógica para salvar o pedido no banco de dados ou realizar outras ações necessárias
+
+            alert('Pedido finalizado com sucesso!');
+            localStorage.removeItem('carrinho'); // Limpa o carrinho após finalizar o pedido
+            carrinho = [];
+            renderCarrinho();
+        });
+    </script>
+</body>
+</html>
