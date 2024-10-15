@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Histórico de Pedidos</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/umd/supabase.js"></script>
+    <style>
+        /* Estilos globais */
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        .pedido {
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 10px;
+            margin: 10px 0;
+        }
+
+        .pedido h2 {
+            font-size: 20px;
+            margin: 0;
+        }
+
+        .pedido p {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Histórico de Pedidos</h1>
+    <div id="historico" class="historico"></div>
+
+    <script>
+        // Inicializa o Supabase
+        const supabaseUrl = 'https://chcysijsjivahlaekhlw.supabase.co';
+        const supabaseKey = 'sua_chave_de_api'; // Substitua pela sua chave
+        const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+
+        // Função para buscar o histórico de pedidos
+        async function buscarHistorico() {
+            const { data, error } = await supabaseClient
+                .from('itens_pedido')
+                .select('*')
+                .order('id', { ascending: false });
+
+            if (error) {
+                console.error('Erro ao buscar histórico:', error);
+                return;
+            }
+
+            // Renderiza os pedidos no HTML
+            const historicoContainer = document.getElementById('historico');
+            historicoContainer.innerHTML = '';
+
+            data.forEach(pedido => {
+                const divPedido = document.createElement('div');
+                divPedido.classList.add('pedido');
+                divPedido.innerHTML = `
+                    <h2>Pedido ID: ${pedido.id}</h2>
+                    <p>Número da Mesa: ${pedido.numero_mesa}</p>
+                    <p>Produto ID: ${pedido.produto_id}</p>
+                    <p>Quantidade: ${pedido.quantidade}</p>
+                    <p>Valor Unitário: R$ ${pedido.valor_unitario.toFixed(2)}</p>
+                `;
+                historicoContainer.appendChild(divPedido);
+            });
+        }
+
+        // Chama a função para buscar o histórico ao carregar a página
+        document.addEventListener('DOMContentLoaded', buscarHistorico);
+    </script>
+</body>
+</html>
