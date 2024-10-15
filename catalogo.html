@@ -5,89 +5,84 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Catálogo de Produtos</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/umd/supabase.js"></script>
+    <style>
+        /* Estilos para o catálogo */
+        .catalogo {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .produto {
+            border: 1px solid #ccc;
+            padding: 10px;
+            text-align: center;
+            width: 100%;
+            max-width: 200px; /* Tamanho máximo dos produtos */
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .produto img {
+            max-width: 100%;
+            height: auto;
+        }
+
+        @media (min-width: 600px) {
+            .produto {
+                width: 48%; /* Produtos ocupam 48% do espaço da tela em dispositivos maiores */
+            }
+        }
+
+        @media (min-width: 900px) {
+            .produto {
+                width: 30%; /* Produtos ocupam 30% do espaço da tela em telas ainda maiores */
+            }
+        }
+    </style>
 </head>
 <body>
     <h1>Catálogo de Produtos</h1>
-    <div id="produtos-container"></div>
+    <div class="catalogo" id="catalogo"></div>
 
-    <h2>Carrinho</h2>
-    <ul id="carrinho"></ul>
-    <button id="finalizar-pedido">Finalizar Pedido</button>
+    <p><a href="index.html">Cadastrar Produto</a></p>
 
     <script>
         // Inicializa o Supabase
-        const supabaseUrl = 'https://yixlhjlwdrbppnqffirg.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlpeGxoamx3ZHJicHBucWZmaXJnIiwicm9zZSI6ImFub24iLCJpYXQiOjE3Mjg5NTExODYsImV4cCI6MjA0NDUyNzE4Nn0.3UVbhExhEuL8PLojlc68Gw8XuQlJsqJFYN4CqUEk8Cc';
-        const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+        const supabaseUrl = 'https://chcysijsjivahlaekhlw.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNoY3lzaWpzaml2YWhsYWVraGx3Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcyODk3NzgwNywiZXhwIjoyMDQ0NTUzODA3fQ.vGRBGeF8y-GU2hNeuNu4XW1CSu1Pa0j747UZicUrifM';
+        const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
-        const carrinho = [];
-
-        // Função para carregar produtos do banco de dados
-        async function carregarProdutos() {
-            const { data, error } = await supabase
-                .from('Produtos')
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Busca os produtos cadastrados no Supabase
+            const { data: produtos, error } = await supabaseClient
+                .from('produtos') // Referência à tabela 'produtos'
                 .select('*');
 
             if (error) {
-                console.error('Erro ao carregar produtos:', error);
-            } else {
-                mostrarProdutos(data);
+                console.error('Erro ao carregar os produtos:', error);
+                alert('Erro ao carregar os produtos.');
+                return;
             }
-        }
 
-        // Função para mostrar produtos
-        function mostrarProdutos(produtos) {
-            const produtosContainer = document.getElementById('produtos-container');
-            produtosContainer.innerHTML = '';
+            const catalogo = document.getElementById('catalogo');
+
+            // Adiciona cada produto ao catálogo
             produtos.forEach(produto => {
-                const div = document.createElement('div');
-                div.innerHTML = `
+                const divProduto = document.createElement('div');
+                divProduto.classList.add('produto');
+
+                divProduto.innerHTML = `
+                    <img src="${produto.foto_url}" alt="Imagem do Produto">
                     <h3>${produto.nome}</h3>
                     <p>Preço: R$ ${produto.preco.toFixed(2)}</p>
-                    <img src="${produto.foto_url}" alt="${produto.nome}" style="width: 100px;">
-                    <button onclick="adicionarAoCarrinho('${produto.nome}', ${produto.preco})">Adicionar ao Carrinho</button>
+                    <p>${produto.descricao}</p>
                 `;
-                produtosContainer.appendChild(div);
+
+                catalogo.appendChild(divProduto);
             });
-        }
-
-        // Função para adicionar produto ao carrinho
-        function adicionarAoCarrinho(nome, preco) {
-            carrinho.push({ nome, preco });
-            atualizarCarrinho();
-        }
-
-        // Função para atualizar a visualização do carrinho
-        function atualizarCarrinho() {
-            const carrinhoContainer = document.getElementById('carrinho');
-            carrinhoContainer.innerHTML = '';
-            carrinho.forEach(produto => {
-                const li = document.createElement('li');
-                li.textContent = `${produto.nome} - R$ ${produto.preco.toFixed(2)}`;
-                carrinhoContainer.appendChild(li);
-            });
-        }
-
-        // Função para finalizar o pedido
-        document.getElementById('finalizar-pedido').addEventListener('click', async () => {
-            for (const produto of carrinho) {
-                const { data, error } = await supabase
-                    .from('Pedidos')
-                    .insert([{ nome: produto.nome, preco: produto.preco }]);
-
-                if (error) {
-                    console.error('Erro ao finalizar o pedido:', error);
-                } else {
-                    console.log('Pedido finalizado:', data);
-                }
-            }
-            carrinho.length = 0; // Limpa o carrinho
-            atualizarCarrinho();
-            alert('Pedido finalizado com sucesso!');
         });
-
-        // Carrega os produtos quando a página é carregada
-        window.onload = carregarProdutos;
     </script>
 </body>
 </html>
