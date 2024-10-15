@@ -99,7 +99,7 @@
     <script>
         // Inicializa o Supabase
         const supabaseUrl = 'https://chcysijsjivahlaekhlw.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNoY3lzaWpzaml2YWhsYWVraGx3Iiwicm9zZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcyODk3NzgwNywiZXhwIjoyMDQ0NTUzODA3fQ.vGRBGeF8y-GU2hNeuNu4XW1CSu1Pa0j747UZicUrifM';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNoY3lzaWpzaml2YWhsYWVraGx3Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcyODk3NzgwNywiZXhwIjoyMDQ0NTUzODA3fQ.vGRBGeF8y-GU2hNeuNu4XW1CSu1Pa0j747UZicUrifM';
         const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
         // Lista de produtos no carrinho
@@ -108,22 +108,21 @@
         // Exibe o carrinho de compras
         function renderCarrinho() {
             const carrinhoContainer = document.getElementById('carrinho');
-            const totalValorElement = document.getElementById('total-valor');
             carrinhoContainer.innerHTML = '';
             let total = 0;
 
             carrinho.forEach(produto => {
-                total += produto.preco;
+                total += produto.preco * produto.quantidade; // Atualiza total com base na quantidade
                 const divProduto = document.createElement('div');
                 divProduto.classList.add('produto-carrinho');
 
                 divProduto.innerHTML = `
                     <div class="produto-info">
                         <img src="${produto.foto_url}" alt="Imagem do Produto">
-                        <span class="produto-nome">${produto.nome}</span>
+                        <span class="produto-nome">${produto.nome} (Quantidade: ${produto.quantidade})</span>
                     </div>
                     <div class="preco-container">
-                        <span>R$ ${produto.preco.toFixed(2)}</span>
+                        <span>R$ ${(produto.preco * produto.quantidade).toFixed(2)}</span>
                     </div>
                     <button onclick="removerDoCarrinho(${produto.id})">Remover</button>
                 `;
@@ -143,12 +142,22 @@
                 </div>
             `;
             carrinhoContainer.appendChild(divTotal);
-            totalValorElement.textContent = total.toFixed(2);
         }
 
         // Remove um produto do carrinho
         function removerDoCarrinho(id) {
-            carrinho = carrinho.filter(produto => produto.id !== id);
+            const produtoExistente = carrinho.find(produto => produto.id === id);
+
+            if (produtoExistente) {
+                if (produtoExistente.quantidade > 1) {
+                    // Decrementa a quantidade se for maior que 1
+                    produtoExistente.quantidade -= 1;
+                } else {
+                    // Remove o produto se a quantidade for 1
+                    carrinho = carrinho.filter(produto => produto.id !== id);
+                }
+            }
+
             renderCarrinho();
         }
 
