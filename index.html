@@ -6,19 +6,17 @@
     <title>Cadastrar Produto</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/umd/supabase.js"></script>
     <style>
-        /* Estilo para a prévia do produto */
         .preview {
             border: 1px solid #ccc;
             padding: 10px;
             margin-top: 20px;
-            display: none; /* Inicialmente oculto */
+            display: none;
             text-align: center;
         }
         .preview img {
             max-width: 100px;
             height: auto;
         }
-        /* Estilo do catálogo */
         .catalogo {
             margin-top: 40px;
         }
@@ -100,8 +98,8 @@
 
                 // Carrega a imagem no Supabase Storage
                 const { data: storageData, error: storageError } = await supabaseClient.storage
-                    .from('produtos') // Nome do bucket onde as imagens serão armazenadas
-                    .upload(`public/${foto.name}`, foto);
+                    .from('produtos')
+                    .upload(`public/${Date.now()}_${foto.name}`, foto);
 
                 if (storageError) {
                     console.error('Erro ao carregar a imagem:', storageError);
@@ -109,13 +107,12 @@
                     return;
                 }
 
-                // Obtém a URL da imagem carregada
-                const { publicURL, error: urlError } = supabaseClient.storage
+                // Obtém a URL pública da imagem carregada
+                const publicURL = supabaseClient.storage
                     .from('produtos')
-                    .getPublicUrl(storageData.path);
+                    .getPublicUrl(storageData.path).publicURL;
 
-                if (urlError) {
-                    console.error('Erro ao obter a URL da imagem:', urlError);
+                if (!publicURL) {
                     alert('Erro ao obter a URL da imagem. Tente novamente.');
                     return;
                 }
@@ -134,7 +131,7 @@
                     document.getElementById('preview').style.display = 'none'; // Oculta a prévia
                 }
             });
-        }); // Fecha o DOMContentLoaded
+        });
     </script>
 </body>
 </html>
