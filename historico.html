@@ -6,7 +6,6 @@
     <title>Histórico de Pedidos</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/umd/supabase.js"></script>
     <style>
-        /* Estilos globais */
         body {
             font-family: Arial, sans-serif;
             padding: 20px;
@@ -37,7 +36,6 @@
             height: auto;
         }
 
-        /* Estilo para o botão voltar */
         .btn-voltar {
             text-align: center;
             margin-top: 20px;
@@ -65,14 +63,13 @@
     </div>
 
     <script>
-        // Inicializa o Supabase
         const supabaseUrl = 'https://chcysijsjivahlaekhlw.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNoY3lzaWpzaml2YWhsYWVraGx3Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcyODk3NzgwNywiZXhwIjoyMDQ0NTUzODA3fQ.vGRBGeF8y-GU2hNeuNu4XW1CSu1Pa0j747UZicUrifM'; // Substitua pela sua chave
         const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
-        // Função para buscar o histórico de pedidos
         async function buscarHistorico() {
-            const numeroMesa = localStorage.getItem('numeroMesa'); // Recupera o número da mesa do localStorage
+            const numeroMesa = localStorage.getItem('numeroMesa');
+            console.log('Número da Mesa:', numeroMesa);
 
             if (!numeroMesa) {
                 alert('Número da mesa não encontrado. Por favor, volte e finalize um pedido primeiro.');
@@ -82,7 +79,7 @@
             const { data: pedidos, error: pedidosError } = await supabaseClient
                 .from('itens_pedido')
                 .select('*')
-                .eq('numero_mesa', numeroMesa) // Filtra os pedidos pela mesa
+                .eq('numero_mesa', numeroMesa)
                 .order('id', { ascending: false });
 
             if (pedidosError) {
@@ -90,7 +87,6 @@
                 return;
             }
 
-            // Renderiza os pedidos no HTML
             const historicoContainer = document.getElementById('historico');
             historicoContainer.innerHTML = '';
 
@@ -100,16 +96,17 @@
             }
 
             for (const pedido of pedidos) {
-                // Busca a informação do produto correspondente
                 const { data: produtos, error: produtoError } = await supabaseClient
                     .from('produtos')
                     .select('*')
                     .eq('id', pedido.produto_id)
-                    .single(); // Usa .single() para pegar apenas um produto
+                    .single();
 
                 if (produtoError) {
                     console.error('Erro ao buscar produto:', produtoError);
-                    continue; // Se houver erro, pula para o próximo pedido
+                    continue;
+                } else {
+                    console.log('Produto encontrado:', produtos);
                 }
 
                 const divPedido = document.createElement('div');
@@ -127,7 +124,6 @@
             }
         }
 
-        // Chama a função para buscar o histórico ao carregar a página
         document.addEventListener('DOMContentLoaded', buscarHistorico);
     </script>
 </body>
