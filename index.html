@@ -59,14 +59,29 @@
                 const { data, error } = await supabaseClient.storage.createBucket(bucketName, { 
                     public: true // Defina como público se desejar
                 });
-                if (error && error.message !== 'Bucket already exists') {
+                if (error && error.message !== 'The resource already exists') {
                     console.error('Erro ao criar o bucket:', error);
                     alert('Erro ao criar o bucket. Tente novamente.');
                 }
             };
 
-            // Criar o bucket de produtos
-            createBucketIfNotExists('produtos');
+            // Função para verificar se o bucket existe
+            const checkIfBucketExists = async (bucketName) => {
+                const { data, error } = await supabaseClient.storage.getBucket(bucketName);
+                return !error;
+            };
+
+            // Verifica se o bucket existe, caso não exista, cria o bucket de produtos
+            const initializeStorage = async () => {
+                const bucketName = 'produtos';
+                const bucketExists = await checkIfBucketExists(bucketName);
+                if (!bucketExists) {
+                    await createBucketIfNotExists(bucketName);
+                }
+            };
+
+            // Chama a função para verificar e criar o bucket
+            initializeStorage();
 
             // Função para mostrar a prévia do produto
             document.getElementById('foto').addEventListener('change', function(event) {
