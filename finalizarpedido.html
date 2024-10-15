@@ -134,8 +134,11 @@
                     </div>
                     <div class="preco-container">
                         <span>R$ ${(produto.preco * produto.quantidade).toFixed(2)}</span>
+                        <div>
+                            <button onclick="adicionarAoCarrinho(${produto.id})">+</button>
+                            <button onclick="removerDoCarrinho(${produto.id})">-</button>
+                        </div>
                     </div>
-                    <button onclick="removerDoCarrinho(${produto.id})">Remover</button>
                 `;
 
                 carrinhoContainer.appendChild(divProduto);
@@ -153,6 +156,29 @@
                 </div>
             `;
             carrinhoContainer.appendChild(divTotal);
+        }
+
+        // Adiciona um produto ao carrinho
+        function adicionarAoCarrinho(id) {
+            const produtoExistente = carrinho.find(produto => produto.id === id);
+
+            if (produtoExistente) {
+                // Incrementa a quantidade do produto
+                produtoExistente.quantidade += 1;
+            } else {
+                // Se o produto não existe, adicione-o com quantidade 1
+                // (Você precisa definir o objeto produto com suas propriedades: id, nome, preco e foto_url)
+                const novoProduto = {
+                    id: id,
+                    nome: "Produto " + id, // Substitua com a lógica para obter o nome do produto
+                    preco: 10.0, // Substitua com a lógica para obter o preço do produto
+                    foto_url: "https://via.placeholder.com/50", // Substitua com a lógica para obter a imagem do produto
+                    quantidade: 1
+                };
+                carrinho.push(novoProduto);
+            }
+
+            renderCarrinho();
         }
 
         // Remove um produto do carrinho
