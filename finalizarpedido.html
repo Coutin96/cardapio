@@ -128,7 +128,6 @@
                     </div>
                     <div class="preco-container">
                         <span>R$ ${produto.preco.toFixed(2)}</span>
-                        <span class="total-produto">Total: R$ ${produto.preco.toFixed(2)}</span>
                     </div>
                     <button onclick="removerDoCarrinho(${produto.id})">Remover</button>
                 `;
@@ -136,6 +135,18 @@
                 carrinhoContainer.appendChild(divProduto);
             });
 
+            // Adiciona o total abaixo dos produtos
+            const divTotal = document.createElement('div');
+            divTotal.className = 'produto-carrinho';
+            divTotal.innerHTML = `
+                <div class="produto-info">
+                    <strong>Total do Carrinho:</strong>
+                </div>
+                <div class="preco-container">
+                    <span>R$ ${total.toFixed(2)}</span>
+                </div>
+            `;
+            carrinhoContainer.appendChild(divTotal);
             totalValorElement.textContent = total.toFixed(2);
         }
 
