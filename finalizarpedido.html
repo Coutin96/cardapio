@@ -218,30 +218,24 @@
                 return;
             }
 
-            // Calcula a quantidade total de produtos e o valor total do pedido
-            let quantidadeTotal = 0;
-            let valorTotal = 0;
+            // Salva os itens do pedido na tabela itens_pedido
+            for (const produto of carrinho) {
+                const { data, error } = await supabaseClient
+                    .from('itens_pedido')
+                    .insert([
+                        {
+                            produto_id: produto.id,
+                            numero_mesa: mesa,
+                            quantidade: produto.quantidade,
+                            valor_unitario: produto.preco
+                        }
+                    ]);
 
-            carrinho.forEach(produto => {
-                quantidadeTotal += produto.quantidade;
-                valorTotal += produto.preco * produto.quantidade;
-            });
-
-            // Salva o pedido no banco de dados
-            const { data, error } = await supabaseClient
-                .from('pedidos')
-                .insert([
-                    {
-                        numero_mesa: mesa,
-                        quantidade_produtos: quantidadeTotal,
-                        valor_total: valorTotal
-                    }
-                ]);
-
-            if (error) {
-                alert('Ocorreu um erro ao finalizar o pedido. Tente novamente.');
-                console.error(error);
-                return;
+                if (error) {
+                    alert('Ocorreu um erro ao adicionar o item ao pedido. Tente novamente.');
+                    console.error(error);
+                    return;
+                }
             }
 
             alert(`Pedido finalizado com sucesso! Mesa: ${mesa}`);
