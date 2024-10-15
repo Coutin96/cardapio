@@ -86,11 +86,22 @@
         .btn-finalizar button:hover {
             background-color: #218838;
         }
+
+        /* Estilo para o campo de mesa */
+        .mesa-container {
+            margin: 20px 0;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
     <h1>Finalizar Pedido</h1>
     <div class="carrinho" id="carrinho"></div>
+
+    <div class="mesa-container">
+        <label for="mesa">Informe a mesa:</label>
+        <input type="text" id="mesa" placeholder="Número da mesa" required>
+    </div>
 
     <div class="btn-finalizar">
         <button id="finalizar-pedido">Finalizar Pedido</button>
@@ -99,7 +110,7 @@
     <script>
         // Inicializa o Supabase
         const supabaseUrl = 'https://chcysijsjivahlaekhlw.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNoY3lzaWpzaml2YWhsYWVraGx3Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcyODk3NzgwNywiZXhwIjoyMDQ0NTUzODA3fQ.vGRBGeF8y-GU2hNeuNu4XW1CSu1Pa0j747UZicUrifM';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNoY3lzaWpzaml2YWhsYWVraGx3Iiwicm9zZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcyODk3NzgwNywiZXhwIjoyMDQ0NTUzODA3fQ.vGRBGeF8y-GU2hNeuNu4XW1CSu1Pa0j747UZicUrifM';
         const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
         // Lista de produtos no carrinho
@@ -170,14 +181,21 @@
 
         // Finaliza o pedido
         document.getElementById('finalizar-pedido').addEventListener('click', () => {
+            const mesa = document.getElementById('mesa').value;
+
             if (carrinho.length === 0) {
                 alert('Carrinho vazio. Adicione produtos antes de finalizar.');
                 return;
             }
 
+            if (!mesa) {
+                alert('Por favor, informe o número da mesa.');
+                return;
+            }
+
             // Aqui você pode adicionar a lógica para salvar o pedido no banco de dados ou realizar outras ações necessárias
 
-            alert('Pedido finalizado com sucesso!');
+            alert(`Pedido finalizado com sucesso! Mesa: ${mesa}`);
             localStorage.removeItem('carrinho'); // Limpa o carrinho após finalizar o pedido
             carrinho = [];
             renderCarrinho();
