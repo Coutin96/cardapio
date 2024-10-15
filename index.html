@@ -6,17 +6,19 @@
     <title>Cadastrar Produto</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/umd/supabase.js"></script>
     <style>
+        /* Estilo para a prévia do produto */
         .preview {
             border: 1px solid #ccc;
             padding: 10px;
             margin-top: 20px;
-            display: none;
+            display: none; /* Inicialmente oculto */
             text-align: center;
         }
         .preview img {
             max-width: 100px;
             height: auto;
         }
+        /* Estilo do catálogo */
         .catalogo {
             margin-top: 40px;
         }
@@ -96,10 +98,13 @@
                     return;
                 }
 
-                // Carrega a imagem no Supabase Storage
+                // Substitui espaços no nome da imagem por underscores
+                const fotoNomeSanitizado = foto.name.replace(/\s+/g, '_');
+
+                // Carrega a imagem no Supabase Storage com o nome sanitizado
                 const { data: storageData, error: storageError } = await supabaseClient.storage
-                    .from('produtos')
-                    .upload(`public/${Date.now()}_${foto.name}`, foto);
+                    .from('produtos') // Nome do bucket onde as imagens serão armazenadas
+                    .upload(`public/${Date.now()}_${fotoNomeSanitizado}`, foto);
 
                 if (storageError) {
                     console.error('Erro ao carregar a imagem:', storageError);
@@ -107,7 +112,7 @@
                     return;
                 }
 
-                // Obtém a URL pública da imagem carregada
+                // Obtém a URL da imagem carregada
                 const publicURL = supabaseClient.storage
                     .from('produtos')
                     .getPublicUrl(storageData.path).publicURL;
@@ -131,7 +136,7 @@
                     document.getElementById('preview').style.display = 'none'; // Oculta a prévia
                 }
             });
-        });
+        }); // Fecha o DOMContentLoaded
     </script>
 </body>
 </html>
