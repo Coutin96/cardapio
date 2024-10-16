@@ -55,26 +55,35 @@
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNoY3lzaWpzaml2YWhsYWVraGx3Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcyODk3NzgwNywiZXhwIjoyMDQ0NTUzODA3fQ.vGRBGeF8y-GU2hNeuNu4XW1CSu1Pa0j747UZicUrifM';
         const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
-        // Função para carregar as tabelas produtos e itens_pedido antes de qualquer ação
-        async function carregarTabelas() {
+        // Função para carregar os produtos
+        async function carregarProdutos() {
             try {
-                // Carrega todos os produtos
-                const { data: produtos, error: produtosError } = await supabaseClient
+                const { data: produtos, error } = await supabaseClient
                     .from('produtos')
                     .select('*');
 
-                if (produtosError) throw produtosError;
+                if (error) throw error;
 
-                // Carrega todos os itens pedidos
-                const { data: itensPedido, error: itensPedidoError } = await supabaseClient
-                    .from('itens_pedido')
-                    .select('*');
-
-                if (itensPedidoError) throw itensPedidoError;
-
-                return { produtos, itensPedido };
+                return produtos;
             } catch (error) {
-                console.error('Erro ao carregar tabelas:', error);
+                console.error('Erro ao carregar produtos:', error);
+                return null;
+            }
+        }
+
+        // Função para buscar os pedidos de uma mesa específica
+        async function buscarPedidosPorMesa(numeroMesa) {
+            try {
+                const { data: pedidos, error } = await supabaseClient
+                    .from('itens_pedido')
+                    .select('*')
+                    .eq('numero_mesa', numeroMesa); // Filtra pelos pedidos da mesa
+
+                if (error) throw error;
+
+                return pedidos;
+            } catch (error) {
+                console.error('Erro ao buscar pedidos por mesa:', error);
                 return null;
             }
         }
@@ -84,44 +93,44 @@
             const numeroMesa = localStorage.getItem('numeroMesa'); // Recupera o número da mesa do localStorage
 
             if (!numeroMesa) {
-                document.getElementById('historico').innerHTML = 'Número da mesa não encontrado. Por favor, volte e finalize um pedido primeiro.';
+                document.getElementById('historico').innerHTML = 'Por favor, finalize um pedido primeiro para ver o histórico.';
                 return;
             }
 
-            // Chama a função para carregar os dados das tabelas
-            const dadosTabelas = await carregarTabelas();
-            if (!dadosTabelas) {
-                document.getElementById('historico').innerHTML = 'Erro ao carregar as tabelas do banco de dados.';
+            // Busca os pedidos da mesa
+            const pedidosMesa = await buscarPedidosPorMesa(numeroMesa);
+            if (!pedidosMesa) {
+                document.getElementById('historico').innerHTML = 'Erro ao buscar pedidos para a mesa.';
                 return;
             }
 
-            const { produtos, itensPedido } = dadosTabelas;
-
-            // Filtra os pedidos pela mesa especificada
-            const pedidosMesa = itensPedido.filter(pedido => pedido.numero_mesa == numeroMesa);
+            // Carrega todos os produtos
+            const produtos = await carregarProdutos();
+            if (!produtos) {
+                document.getElementById('historico').innerHTML = 'Erro ao carregar produtos.';
+                return;
+            }
 
             if (pedidosMesa.length === 0) {
                 document.getElementById('historico').innerHTML = 'Nenhum pedido encontrado para este número de mesa.';
                 return;
             }
 
-            let valorTotalGeral = 0; // Variável para armazenar o valor total de todos os pedidos
+            let valorTotalGeral = 0;
 
-            // Renderiza os pedidos no HTML
             const historicoContainer = document.getElementById('historico');
             historicoContainer.innerHTML = '';
 
             for (const pedido of pedidosMesa) {
-                // Busca a informação do produto correspondente ao produto_id no pedido
-                const produto = produtos.find(produto => produto.id === pedido.produto_id);
+                const produto = produtos.find(prod => prod.id === pedido.produto_id);
                 
                 if (!produto) {
                     console.error(`Produto com ID ${pedido.produto_id} não encontrado.`);
                     continue;
                 }
 
-                const valorTotal = pedido.valor_unitario * pedido.quantidade; // Calcula o valor total do pedido
-                valorTotalGeral += valorTotal; // Soma ao valor total geral
+                const valorTotal = pedido.valor_unitario * pedido.quantidade;
+                valorTotalGeral += valorTotal;
 
                 const divPedido = document.createElement('div');
                 divPedido.classList.add('pedido');
@@ -137,7 +146,6 @@
                 historicoContainer.appendChild(divPedido);
             }
 
-            // Exibe o valor total de todos os pedidos
             document.getElementById('valorTotal').innerHTML = `Valor Total de Todos os Pedidos: R$ ${valorTotalGeral.toFixed(2)}`;
         }
 
