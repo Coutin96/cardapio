@@ -55,6 +55,30 @@
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNoY3lzaWpzaml2YWhsYWVraGx3Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcyODk3NzgwNywiZXhwIjoyMDQ0NTUzODA3fQ.vGRBGeF8y-GU2hNeuNu4XW1CSu1Pa0j747UZicUrifM';
         const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
+        // Função para carregar as tabelas produtos e itens_pedido antes de qualquer ação
+        async function carregarTabelas() {
+            try {
+                // Carrega todos os produtos
+                const { data: produtos, error: produtosError } = await supabaseClient
+                    .from('produtos')
+                    .select('*');
+
+                if (produtosError) throw produtosError;
+
+                // Carrega todos os itens pedidos
+                const { data: itensPedido, error: itensPedidoError } = await supabaseClient
+                    .from('itens_pedido')
+                    .select('*');
+
+                if (itensPedidoError) throw itensPedidoError;
+
+                return { produtos, itensPedido };
+            } catch (error) {
+                console.error('Erro ao carregar tabelas:', error);
+                return null;
+            }
+        }
+
         // Função para buscar o histórico de pedidos
         async function buscarHistorico() {
             const numeroMesa = localStorage.getItem('numeroMesa'); // Recupera o número da mesa do localStorage
@@ -64,20 +88,19 @@
                 return;
             }
 
-            // Busca os pedidos da mesa especificada
-            const { data: pedidos, error: pedidosError } = await supabaseClient
-                .from('itens_pedido')
-                .select('*')
-                .eq('numero_mesa', numeroMesa) // Filtra os pedidos pela mesa
-                .order('id', { ascending: false });
-
-            if (pedidosError) {
-                console.error('Erro ao buscar histórico:', pedidosError);
+            // Chama a função para carregar os dados das tabelas
+            const dadosTabelas = await carregarTabelas();
+            if (!dadosTabelas) {
+                document.getElementById('historico').innerHTML = 'Erro ao carregar as tabelas do banco de dados.';
                 return;
             }
 
-            // Verifica se há pedidos
-            if (pedidos.length === 0) {
+            const { produtos, itensPedido } = dadosTabelas;
+
+            // Filtra os pedidos pela mesa especificada
+            const pedidosMesa = itensPedido.filter(pedido => pedido.numero_mesa == numeroMesa);
+
+            if (pedidosMesa.length === 0) {
                 document.getElementById('historico').innerHTML = 'Nenhum pedido encontrado para este número de mesa.';
                 return;
             }
@@ -88,17 +111,13 @@
             const historicoContainer = document.getElementById('historico');
             historicoContainer.innerHTML = '';
 
-            for (const pedido of pedidos) {
-                // Busca a informação do produto correspondente
-                const { data: produto, error: produtoError } = await supabaseClient
-                    .from('produtos')
-                    .select('*')
-                    .eq('id', pedido.produto_id)
-                    .single(); // Usa .single() para pegar apenas um produto
-
-                if (produtoError) {
-                    console.error('Erro ao buscar produto:', produtoError);
-                    continue; // Se houver erro, pula para o próximo pedido
+            for (const pedido of pedidosMesa) {
+                // Busca a informação do produto correspondente ao produto_id no pedido
+                const produto = produtos.find(produto => produto.id === pedido.produto_id);
+                
+                if (!produto) {
+                    console.error(`Produto com ID ${pedido.produto_id} não encontrado.`);
+                    continue;
                 }
 
                 const valorTotal = pedido.valor_unitario * pedido.quantidade; // Calcula o valor total do pedido
