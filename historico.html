@@ -112,13 +112,13 @@
             const pedidosContainer = document.getElementById('pedidos');
             pedidosContainer.innerHTML = ''; // Limpa a lista antes de preencher
 
+            // Sempre exibe o número da mesa procurado
+            document.getElementById('mesaInfo').innerHTML = `Histórico de pedidos para a mesa: ${mesa}`;
+
             if (data.length === 0) {
                 pedidosContainer.innerHTML = '<p>Nenhum pedido encontrado para esta mesa.</p>';
                 return;
             }
-
-            // Exibe o número da mesa procurado
-            document.getElementById('mesaInfo').innerHTML = `Histórico de pedidos para a mesa: ${mesa}`;
 
             data.forEach(pedido => {
                 const divPedido = document.createElement('div');
