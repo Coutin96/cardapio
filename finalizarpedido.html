@@ -10,16 +10,22 @@
         body {
             font-family: Arial, sans-serif;
             padding: 20px;
+            background-color: #f8f9fa;
         }
 
         h1 {
             text-align: center;
+            color: #343a40;
         }
 
         /* Estilos para o carrinho */
         .carrinho {
             max-width: 800px;
             margin: 0 auto;
+            background: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
         }
 
         .produto-carrinho {
@@ -110,6 +116,14 @@
         .btn-limpar button:hover {
             background-color: #c82333; /* Cor do botão de limpar ao passar o mouse */
         }
+
+        /* Estilo do rodapé */
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #6c757d;
+        }
+
     </style>
 </head>
 <body>
@@ -135,10 +149,14 @@
         <a href="historico.html"><b>Ver Histórico de Pedidos</b></a>
     </div>
 
+    <footer>
+        <p>&copy; 2024 Seu Restaurante. Todos os direitos reservados.</p>
+    </footer>
+
     <script>
         // Inicializa o Supabase
         const supabaseUrl = 'https://chcysijsjivahlaekhlw.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNoY3lzaWpzaml2YWhsYWVraGx3Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcyODk3NzgwNywiZXhwIjoyMDQ0NTUzODA3fQ.vGRBGeF8y-GU2hNeuNu4XW1CSu1Pa0j747UZicUrifM';
+        const supabaseKey = 'seu-chave-aqui'; // Coloque sua chave aqui
         const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
         // Lista de produtos no carrinho
@@ -250,38 +268,26 @@
                 return;
             }
 
-            if (!mesa) {
-                alert('Por favor, informe o número da mesa.');
-                return;
-            }
-
-            const pedido = {
-                mesa: mesa,
-                itens: carrinho.map(item => ({
-                    produto_id: item.id,
-                    quantidade: item.quantidade,
-                    valor_unitario: item.preco
-                }))
-            };
-
-            // Insere o pedido no banco de dados
-            const { data, error } = await supabaseClient
-                .from('itens_pedido')
-                .insert(pedido.itens)
-                .select();
+            const { data, error } = await supabaseClient.from('itens_pedido').insert(carrinho.map(produto => ({
+                produto_id: produto.id,
+                numero_mesa: mesa,
+                quantidade: produto.quantidade,
+                valor_unitario: produto.preco
+            })));
 
             if (error) {
-                console.error('Erro ao inserir pedido:', error);
+                console.error('Erro ao finalizar o pedido:', error);
                 alert('Erro ao finalizar o pedido. Tente novamente.');
             } else {
                 alert('Pedido finalizado com sucesso!');
                 limparCarrinho(); // Limpa o carrinho após finalizar o pedido
-                document.getElementById('mesa').value = ''; // Limpa o campo mesa
             }
         });
 
-        // Limpa o pedido ao clicar no botão
-        document.getElementById('limpar-pedido').addEventListener('click', limparCarrinho);
+        // Limpar o pedido
+        document.getElementById('limpar-pedido').addEventListener('click', () => {
+            limparCarrinho(); // Limpa o carrinho
+        });
     </script>
 </body>
 </html>
