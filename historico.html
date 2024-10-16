@@ -43,10 +43,23 @@
             margin-top: 30px;
             color: #6c757d;
         }
+
+        /* Estilos do formulário */
+        .formulario {
+            text-align: center;
+            margin-bottom: 20px;
+        }
     </style>
 </head>
 <body>
     <h1>Histórico de Pedidos</h1>
+
+    <div class="formulario">
+        <label for="numeroMesa">Digite o número da mesa:</label>
+        <input type="number" id="numeroMesa" min="1" max="100" required>
+        <button id="verificarMesa">Verificar</button>
+    </div>
+
     <div class="pedidos" id="pedidos"></div>
 
     <div style="text-align: center;">
@@ -70,9 +83,7 @@
         }
 
         // Carrega os pedidos do histórico
-        async function carregarHistorico() {
-            const mesa = localStorage.getItem('numeroMesa'); // Obtém o número da mesa do localStorage
-
+        async function carregarHistorico(mesa) {
             // Verifica se o número da mesa é válido
             if (!verificarNumeroMesa(mesa)) {
                 document.getElementById('pedidos').innerHTML = '<p>Número da mesa inválido. Por favor, verifique e tente novamente.</p>';
@@ -111,8 +122,11 @@
             });
         }
 
-        // Carrega os pedidos ao abrir a página
-        document.addEventListener('DOMContentLoaded', carregarHistorico);
+        // Ação ao clicar no botão "Verificar"
+        document.getElementById('verificarMesa').addEventListener('click', () => {
+            const mesa = document.getElementById('numeroMesa').value; // Obtém o número da mesa digitado
+            carregarHistorico(mesa); // Carrega o histórico para o número da mesa digitado
+        });
     </script>
 </body>
 </html>
