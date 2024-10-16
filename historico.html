@@ -10,147 +10,96 @@
         body {
             font-family: Arial, sans-serif;
             padding: 20px;
+            background-color: #f8f9fa;
         }
 
         h1 {
             text-align: center;
+            color: #343a40;
+        }
+
+        /* Estilos para a lista de pedidos */
+        .pedidos {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
         }
 
         .pedido {
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            padding: 10px;
-            margin: 10px 0;
+            border-bottom: 1px solid #ccc;
+            padding: 10px 0;
         }
 
-        .pedido h2 {
-            font-size: 20px;
-            margin: 0;
+        .pedido:last-child {
+            border-bottom: none; /* Remove a borda do último pedido */
         }
 
-        .pedido p {
-            margin: 5px 0;
-        }
-
-        .produto-imagem {
-            max-width: 100px;
-            height: auto;
-        }
-
-        .total {
-            font-weight: bold;
-            font-size: 1.2em;
-            margin-top: 20px;
+        /* Estilo do rodapé */
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #6c757d;
         }
     </style>
 </head>
 <body>
     <h1>Histórico de Pedidos</h1>
-    <div id="historico" class="historico"></div>
-    <div id="valorTotal" class="total"></div>
+    <div class="pedidos" id="pedidos"></div>
+
+    <div style="text-align: center;">
+        <a href="catalogo.html"><b>Voltar para o catálogo</b></a>
+    </div>
+
+    <footer>
+        <p>&copy; 2024 Seu Restaurante. Todos os direitos reservados.</p>
+    </footer>
 
     <script>
         // Inicializa o Supabase
         const supabaseUrl = 'https://chcysijsjivahlaekhlw.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNoY3lzaWpzaml2YWhsYWVraGx3Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcyODk3NzgwNywiZXhwIjoyMDQ0NTUzODA3fQ.vGRBGeF8y-GU2hNeuNu4XW1CSu1Pa0j747UZicUrifM';
+        const supabaseKey = 'seu-chave-aqui'; // Coloque sua chave aqui
         const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
-        // Função para carregar os produtos
-        async function carregarProdutos() {
-            try {
-                const { data: produtos, error } = await supabaseClient
-                    .from('produtos')
-                    .select('*');
+        // Carrega os pedidos do histórico
+        async function carregarHistorico() {
+            const mesa = localStorage.getItem('numeroMesa'); // Obtém o número da mesa do localStorage
 
-                if (error) throw error;
+            const { data, error } = await supabaseClient
+                .from('itens_pedido')
+                .select('*')
+                .eq('numero_mesa', mesa); // Filtra pedidos pela mesa
 
-                return produtos;
-            } catch (error) {
-                console.error('Erro ao carregar produtos:', error);
-                return null;
-            }
-        }
-
-        // Função para buscar os pedidos de uma mesa específica
-        async function buscarPedidosPorMesa(numeroMesa) {
-            try {
-                const { data: pedidos, error } = await supabaseClient
-                    .from('itens_pedido')
-                    .select('*')
-                    .eq('numero_mesa', numeroMesa); // Filtra pelos pedidos da mesa
-
-                if (error) throw error;
-
-                return pedidos;
-            } catch (error) {
-                console.error('Erro ao buscar pedidos por mesa:', error);
-                return null;
-            }
-        }
-
-        // Função para buscar o histórico de pedidos
-        async function buscarHistorico() {
-            const numeroMesa = localStorage.getItem('numeroMesa'); // Recupera o número da mesa do localStorage
-
-            if (!numeroMesa) {
-                document.getElementById('historico').innerHTML = 'Por favor, finalize um pedido primeiro para ver o histórico.';
+            if (error) {
+                console.error('Erro ao carregar histórico:', error);
                 return;
             }
 
-            // Busca os pedidos da mesa
-            const pedidosMesa = await buscarPedidosPorMesa(numeroMesa);
-            if (!pedidosMesa) {
-                document.getElementById('historico').innerHTML = 'Erro ao buscar pedidos para a mesa.';
+            const pedidosContainer = document.getElementById('pedidos');
+            pedidosContainer.innerHTML = ''; // Limpa a lista antes de preencher
+
+            if (data.length === 0) {
+                pedidosContainer.innerHTML = '<p>Nenhum pedido encontrado para esta mesa.</p>';
                 return;
             }
 
-            // Carrega todos os produtos
-            const produtos = await carregarProdutos();
-            if (!produtos) {
-                document.getElementById('historico').innerHTML = 'Erro ao carregar produtos.';
-                return;
-            }
-
-            if (pedidosMesa.length === 0) {
-                document.getElementById('historico').innerHTML = 'Nenhum pedido encontrado para este número de mesa.';
-                return;
-            }
-
-            let valorTotalGeral = 0;
-
-            const historicoContainer = document.getElementById('historico');
-            historicoContainer.innerHTML = '';
-
-            for (const pedido of pedidosMesa) {
-                const produto = produtos.find(prod => prod.id === pedido.produto_id);
-                
-                if (!produto) {
-                    console.error(`Produto com ID ${pedido.produto_id} não encontrado.`);
-                    continue;
-                }
-
-                const valorTotal = pedido.valor_unitario * pedido.quantidade;
-                valorTotalGeral += valorTotal;
-
+            data.forEach(pedido => {
                 const divPedido = document.createElement('div');
                 divPedido.classList.add('pedido');
                 divPedido.innerHTML = `
-                    <h2>Pedido ID: ${pedido.id}</h2>
-                    <p>Número da Mesa: ${pedido.numero_mesa}</p>
-                    <p>Produto: ${produto.nome}</p>
-                    <img src="${produto.foto_url}" alt="Imagem do Produto" class="produto-imagem">
-                    <p>Quantidade: ${pedido.quantidade}</p>
-                    <p>Valor Unitário: R$ ${pedido.valor_unitario.toFixed(2)}</p>
-                    <p>Valor Total: R$ ${valorTotal.toFixed(2)}</p>
+                    <p><strong>Produto ID:</strong> ${pedido.produto_id}</p>
+                    <p><strong>Quantidade:</strong> ${pedido.quantidade}</p>
+                    <p><strong>Valor Unitário:</strong> R$ ${pedido.valor_unitario.toFixed(2)}</p>
+                    <hr>
                 `;
-                historicoContainer.appendChild(divPedido);
-            }
-
-            document.getElementById('valorTotal').innerHTML = `Valor Total de Todos os Pedidos: R$ ${valorTotalGeral.toFixed(2)}`;
+                pedidosContainer.appendChild(divPedido);
+            });
         }
 
-        // Chama a função para buscar o histórico ao carregar a página
-        document.addEventListener('DOMContentLoaded', buscarHistorico);
+        // Carrega os pedidos ao abrir a página
+        document.addEventListener('DOMContentLoaded', carregarHistorico);
     </script>
 </body>
 </html>
