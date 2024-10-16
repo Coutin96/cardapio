@@ -37,6 +37,11 @@
             border-bottom: none; /* Remove a borda do último pedido */
         }
 
+        img {
+            max-width: 100px; /* Limita o tamanho da imagem */
+            margin-right: 15px; /* Espaço entre a imagem e os detalhes */
+        }
+
         /* Estilo do rodapé */
         footer {
             text-align: center;
@@ -78,7 +83,7 @@
     <script>
         // Inicializa o Supabase
         const supabaseUrl = 'https://chcysijsjivahlaekhlw.supabase.co';
-        const supabaseKey = 'sua_chave_aqui'; // Coloque sua chave aqui
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNoY3lzaWpzaml2YWhsYWVraGx3Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcyODk3NzgwNywiZXhwIjoyMDQ0NTUzODA3fQ.vGRBGeF8y-GU2hNeuNu4XW1CSu1Pa0j747UZicUrifM'; // Coloque sua chave aqui
         const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
         // Função para verificar se o número da mesa é válido
@@ -89,13 +94,13 @@
 
         // Função para carregar pedidos do histórico
         async function carregarHistorico(mesa) {
-            const { data, error } = await supabaseClient
+            const { data: pedidos, error: pedidosError } = await supabaseClient
                 .from('itens_pedido')
-                .select('produto_id, quantidade, valor_unitario')
+                .select('id, produto_id, quantidade, valor_unitario')
                 .eq('numero_mesa', mesa); // Filtra pedidos pela mesa
 
-            if (error) {
-                console.error('Erro ao carregar histórico:', error);
+            if (pedidosError) {
+                console.error('Erro ao carregar histórico:', pedidosError);
                 document.getElementById('pedidos').innerHTML = '<p>Ocorreu um erro ao carregar os pedidos. Tente novamente mais tarde.</p>';
                 return;
             }
@@ -103,22 +108,35 @@
             const pedidosContainer = document.getElementById('pedidos');
             pedidosContainer.innerHTML = ''; // Limpa a lista antes de preencher
 
-            if (data.length === 0) {
+            if (pedidos.length === 0) {
                 pedidosContainer.innerHTML = '<p>Nenhum pedido encontrado para esta mesa.</p>';
                 return;
             }
 
-            data.forEach(pedido => {
+            for (const pedido of pedidos) {
+                const { data: produto, error: produtoError } = await supabaseClient
+                    .from('produtos')
+                    .select('imagem, descricao') // Ajuste para os campos que você tem
+                    .eq('id', pedido.produto_id)
+                    .single(); // Espera apenas um produto
+
+                if (produtoError) {
+                    console.error('Erro ao carregar produto:', produtoError);
+                    continue; // Pula para o próximo pedido se houver erro
+                }
+
                 const divPedido = document.createElement('div');
                 divPedido.classList.add('pedido');
                 divPedido.innerHTML = `
-                    <p><strong>Produto ID:</strong> ${pedido.produto_id}</p>
-                    <p><strong>Quantidade:</strong> ${pedido.quantidade}</p>
-                    <p><strong>Valor Unitário:</strong> R$ ${pedido.valor_unitario.toFixed(2)}</p>
+                    <img src="${produto.imagem}" alt="${produto.descricao}">
+                    <strong>ID do Pedido:</strong> ${pedido.id} <br>
+                    <strong>Produto:</strong> ${produto.descricao} <br>
+                    <strong>Quantidade:</strong> ${pedido.quantidade} <br>
+                    <strong>Valor Unitário:</strong> R$ ${pedido.valor_unitario.toFixed(2)} <br>
                     <hr>
                 `;
                 pedidosContainer.appendChild(divPedido);
-            });
+            }
         }
 
         // Função para carregar o número da mesa
