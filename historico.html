@@ -45,7 +45,7 @@
     <script>
         // Inicializa o Supabase
         const supabaseUrl = 'https://chcysijsjivahlaekhlw.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNoY3lzaWpzaml2YWhsYWVraGx3Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcyODk3NzgwNywiZXhwIjoyMDQ0NTUzODA3fQ.vGRBGeF8y-GU2hNeuNu4XW1CSu1Pa0j747UZicUrifM';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNoY3lzaWpzaml2YWhsYWVraGx3Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcyODk3NzgwNywiZXhwIjoyMDQ0NTUzODA3fQ.vGRBGeF8y-GU2hNeuNu4XW1CSu1Pa0j747UZicUrifM'; // Substitua pela sua chave
         const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
         // Função para buscar o histórico de pedidos
@@ -69,7 +69,7 @@
                 return;
             }
 
-            // Renderiza os pedidos no HTML
+            // Verifica se algum pedido foi encontrado
             const historicoContainer = document.getElementById('historico');
             historicoContainer.innerHTML = '';
 
@@ -78,9 +78,10 @@
                 return;
             }
 
+            // Itera pelos pedidos encontrados
             for (const pedido of pedidos) {
                 // Busca a informação do produto correspondente
-                const { data: produtos, error: produtoError } = await supabaseClient
+                const { data: produto, error: produtoError } = await supabaseClient
                     .from('produtos')
                     .select('*')
                     .eq('id', pedido.produto_id)
@@ -91,13 +92,14 @@
                     continue; // Se houver erro, pula para o próximo pedido
                 }
 
+                // Cria o HTML para exibir os pedidos
                 const divPedido = document.createElement('div');
                 divPedido.classList.add('pedido');
                 divPedido.innerHTML = `
                     <h2>Pedido ID: ${pedido.id}</h2>
                     <p>Número da Mesa: ${pedido.numero_mesa}</p>
-                    <p>Produto: ${produtos.nome}</p>
-                    <img src="${produtos.foto_url}" alt="Imagem do Produto" class="produto-imagem">
+                    <p>Produto: ${produto.nome}</p>
+                    <img src="${produto.foto_url}" alt="Imagem do Produto" class="produto-imagem">
                     <p>Quantidade: ${pedido.quantidade}</p>
                     <p>Valor Unitário: R$ ${pedido.valor_unitario.toFixed(2)}</p>
                     <p>Valor Total: R$ ${(pedido.valor_unitario * pedido.quantidade).toFixed(2)}</p>
