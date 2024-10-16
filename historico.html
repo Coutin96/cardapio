@@ -49,16 +49,24 @@
             text-align: center;
             margin-bottom: 20px;
         }
+
+        .mesa-info {
+            text-align: center;
+            margin-top: 20px;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
     <h1>Histórico de Pedidos</h1>
 
     <div class="formulario">
-        <label for="numeroMesa">Digite o número da mesa:</label>
+        <label for="numeroMesa">Informe a mesa:</label>
         <input type="number" id="numeroMesa" min="1" max="100" required>
         <button id="verificarMesa">Verificar</button>
     </div>
+
+    <div class="mesa-info" id="mesaInfo"></div>
 
     <div class="pedidos" id="pedidos"></div>
 
@@ -108,6 +116,9 @@
                 pedidosContainer.innerHTML = '<p>Nenhum pedido encontrado para esta mesa.</p>';
                 return;
             }
+
+            // Exibe o número da mesa procurado
+            document.getElementById('mesaInfo').innerHTML = `Histórico de pedidos para a mesa: ${mesa}`;
 
             data.forEach(pedido => {
                 const divPedido = document.createElement('div');
