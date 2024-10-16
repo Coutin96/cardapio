@@ -54,6 +54,16 @@
 
         .informacoes button {
             margin: 5px; /* Espaçamento entre os botões */
+            padding: 5px 10px; /* Padding para os botões */
+            border: none; /* Remove bordas */
+            background-color: #007bff; /* Cor de fundo */
+            color: white; /* Cor do texto */
+            border-radius: 5px; /* Bordas arredondadas */
+            cursor: pointer; /* Cursor de mão ao passar por cima */
+        }
+
+        .informacoes button:hover {
+            background-color: #0056b3; /* Cor ao passar o mouse */
         }
 
         .quantidade {
@@ -95,10 +105,18 @@
         .link-finalizar a:hover {
             background-color: #0056b3;
         }
+
+        /* Estilo de carregamento */
+        #loading {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body>
     <h1>Catálogo de Produtos</h1>
+    <div id="loading">Carregando produtos...</div>
     <div class="catalogo" id="catalogo"></div>
 
     <div class="link-finalizar">
@@ -108,14 +126,18 @@
     <script>
         // Inicializa o Supabase
         const supabaseUrl = 'https://chcysijsjivahlaekhlw.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNoY3lzaWpzaml2YWhsYWVraGx3Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcyODk3NzgwNywiZXhwIjoyMDQ0NTUzODA3fQ.vGRBGeF8y-GU2hNeuNu4XW1CSu1Pa0j747UZicUrifM';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNoY3lzaWpzaml2YWhsYWVraGx3Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcyODk3NzgwNywiZXhwIjoyMDQ0NTUzODA3fQ.vGRBGeF8y-GU2hNeuNu4XW1CSu1Pa0j747UZicUrifM'; // Substitua pela sua chave de API
         const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
         document.addEventListener('DOMContentLoaded', async function() {
+            document.getElementById('loading').style.display = 'block'; // Exibe indicador de carregamento
+            
             // Busca os produtos cadastrados no Supabase
             const { data: produtos, error } = await supabaseClient
                 .from('produtos') // Referência à tabela 'produtos'
                 .select('*');
+
+            document.getElementById('loading').style.display = 'none'; // Oculta indicador de carregamento
 
             if (error) {
                 console.error('Erro ao carregar os produtos:', error);
@@ -177,14 +199,14 @@
                 if (produtoExistente.quantidade > 1) {
                     // Decrementa a quantidade
                     produtoExistente.quantidade -= 1;
-                    alert('Uma unidade removida do carrinho! Quantidade restante: ' + produtoExistente.quantidade);
+                    alert('Uma unidade removida do carrinho! Quantidade atual: ' + produtoExistente.quantidade);
                 } else {
-                    // Remove o produto se a quantidade for 1
+                    // Remove produto do carrinho se a quantidade for 1
                     carrinho = carrinho.filter(produto => produto.id !== id);
-                    alert('Produto removido do carrinho!');
+                    alert('Produto removido do carrinho.');
                 }
             } else {
-                alert('Produto não encontrado no carrinho!');
+                alert('Produto não encontrado no carrinho.');
             }
 
             localStorage.setItem('carrinho', JSON.stringify(carrinho));
