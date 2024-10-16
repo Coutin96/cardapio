@@ -36,16 +36,23 @@
             max-width: 100px;
             height: auto;
         }
+
+        .total {
+            font-weight: bold;
+            text-align: right;
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body>
     <h1>Histórico de Pedidos</h1>
     <div id="historico" class="historico"></div>
+    <div id="valor-total" class="total"></div>
 
     <script>
         // Inicializa o Supabase
         const supabaseUrl = 'https://chcysijsjivahlaekhlw.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNoY3lzaWpzaml2YWhsYWVraGx3Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcyODk3NzgwNywiZXhwIjoyMDQ0NTUzODA3fQ.vGRBGeF8y-GU2hNeuNu4XW1CSu1Pa0j747UZicUrifM'; // Substitua pela sua chave
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNoY3lzaWpzaml2YWhsYWVraGx3Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcyODk3NzgwNywiZXhwIjoyMDQ0NTUzODA3fQ.vGRBGeF8y-GU2hNeuNu4XW1CSu1Pa0j747UZicUrifM';
         const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
         // Função para buscar o histórico de pedidos
@@ -57,7 +64,7 @@
                 return;
             }
 
-            // Busca os pedidos da mesa especificada
+            // Busca os pedidos da mesa especificada na tabela itens_pedido
             const { data: pedidos, error: pedidosError } = await supabaseClient
                 .from('itens_pedido')
                 .select('*')
@@ -69,7 +76,7 @@
                 return;
             }
 
-            // Verifica se algum pedido foi encontrado
+            // Renderiza os pedidos no HTML
             const historicoContainer = document.getElementById('historico');
             historicoContainer.innerHTML = '';
 
@@ -78,9 +85,10 @@
                 return;
             }
 
-            // Itera pelos pedidos encontrados
+            let valorTotalGeral = 0; // Para somar o valor total de todos os pedidos
+
             for (const pedido of pedidos) {
-                // Busca a informação do produto correspondente
+                // Busca as informações do produto relacionado a este pedido
                 const { data: produto, error: produtoError } = await supabaseClient
                     .from('produtos')
                     .select('*')
@@ -92,7 +100,11 @@
                     continue; // Se houver erro, pula para o próximo pedido
                 }
 
-                // Cria o HTML para exibir os pedidos
+                // Calcula o valor total deste pedido (quantidade * valor unitário)
+                const valorTotalPedido = pedido.quantidade * pedido.valor_unitario;
+                valorTotalGeral += valorTotalPedido; // Acumula o valor total de todos os pedidos
+
+                // Cria o bloco HTML para o pedido
                 const divPedido = document.createElement('div');
                 divPedido.classList.add('pedido');
                 divPedido.innerHTML = `
@@ -102,10 +114,13 @@
                     <img src="${produto.foto_url}" alt="Imagem do Produto" class="produto-imagem">
                     <p>Quantidade: ${pedido.quantidade}</p>
                     <p>Valor Unitário: R$ ${pedido.valor_unitario.toFixed(2)}</p>
-                    <p>Valor Total: R$ ${(pedido.valor_unitario * pedido.quantidade).toFixed(2)}</p>
+                    <p>Valor Total: R$ ${valorTotalPedido.toFixed(2)}</p>
                 `;
                 historicoContainer.appendChild(divPedido);
             }
+
+            // Exibe o valor total de todos os pedidos
+            document.getElementById('valor-total').innerHTML = `Valor Total Geral: R$ ${valorTotalGeral.toFixed(2)}`;
         }
 
         // Chama a função para buscar o histórico ao carregar a página
