@@ -6,6 +6,50 @@
     <title>Cadastrar Produto</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/umd/supabase.js"></script>
     <style>
+        /* Estilo geral da página */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #343a40;
+        }
+
+        /* Estilo do formulário */
+        form {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
         /* Estilo para a prévia do produto */
         .preview {
             border: 1px solid #ccc;
@@ -14,13 +58,23 @@
             display: none; /* Inicialmente oculto */
             text-align: center;
         }
+
         .preview img {
             max-width: 100px;
             height: auto;
         }
+
         /* Estilo do catálogo */
         .catalogo {
             margin-top: 40px;
+            text-align: center;
+        }
+
+        /* Estilo do rodapé */
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #6c757d;
         }
     </style>
 </head>
@@ -36,7 +90,7 @@
     </form>
 
     <div class="catalogo">
-        <h2>Catálogo</h2>
+        <h2>Prévia do Produto</h2>
         <div class="preview" id="preview">
             <h3 id="preview-nome"></h3>
             <img id="preview-foto" src="" alt="Prévia do Produto">
@@ -45,8 +99,12 @@
         </div>
     </div>
 
-    <p><a href="catalogo.html">Catálogo</a></p>
+    <p><a href="catalogo.html">Ver Catálogo</a></p>
     
+    <footer>
+        <p>&copy; 2024 Seu Restaurante. Todos os direitos reservados.</p>
+    </footer>
+
     <script>
         // Inicializa o Supabase
         const supabaseUrl = 'https://chcysijsjivahlaekhlw.supabase.co';
