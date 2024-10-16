@@ -132,7 +132,7 @@
 
     <div class="mesa-container">
         <label for="mesa">Informe a mesa:</label>
-        <input type="text" id="mesa" placeholder="Número da mesa" required>
+        <input type="number" id="mesa" min="1" max="100" placeholder="Número da mesa" required>
     </div>
 
     <div style="text-align: center;"><a href="catalogo.html"><b>Voltar para o catálogo</b></a></div>
@@ -223,71 +223,66 @@
                 carrinho.push(novoProduto);
             }
 
-            // Atualiza o localStorage
+            // Salva o carrinho no localStorage
             localStorage.setItem('carrinho', JSON.stringify(carrinho));
-
-            renderCarrinho();
+            renderCarrinho(); // Atualiza a renderização do carrinho
         }
 
         // Remove um produto do carrinho
         function removerDoCarrinho(id) {
-            const produtoExistente = carrinho.find(produto => produto.id === id);
+            const produtoIndex = carrinho.findIndex(produto => produto.id === id);
 
-            if (produtoExistente) {
-                if (produtoExistente.quantidade > 1) {
-                    // Decrementa a quantidade se for maior que 1
-                    produtoExistente.quantidade -= 1;
-                } else {
-                    // Remove o produto se a quantidade for 1
-                    carrinho = carrinho.filter(produto => produto.id !== id);
+            if (produtoIndex > -1) {
+                // Diminui a quantidade ou remove o produto
+                carrinho[produtoIndex].quantidade -= 1;
+
+                if (carrinho[produtoIndex].quantidade <= 0) {
+                    carrinho.splice(produtoIndex, 1);
                 }
             }
 
-            // Atualiza o localStorage
+            // Salva o carrinho no localStorage
             localStorage.setItem('carrinho', JSON.stringify(carrinho));
-
-            renderCarrinho();
+            renderCarrinho(); // Atualiza a renderização do carrinho
         }
-
-        // Limpa o carrinho
-        function limparCarrinho() {
-            carrinho = [];
-            localStorage.setItem('carrinho', JSON.stringify(carrinho)); // Limpa o carrinho do localStorage
-            renderCarrinho(); // Atualiza a interface
-        }
-
-        // Exibe o carrinho ao carregar a página
-        document.addEventListener('DOMContentLoaded', renderCarrinho);
 
         // Finaliza o pedido
-        document.getElementById('finalizar-pedido').addEventListener('click', async () => {
+        document.getElementById('finalizar-pedido').onclick = async function() {
             const mesa = document.getElementById('mesa').value;
 
-            if (carrinho.length === 0) {
-                alert('Carrinho vazio. Adicione produtos antes de finalizar.');
+            // Verifica se o campo mesa está vazio ou fora do intervalo
+            if (!mesa || mesa < 1 || mesa > 100) {
+                alert('Por favor, insira um número de mesa válido entre 1 e 100.');
                 return;
             }
 
-            const { data, error } = await supabaseClient.from('itens_pedido').insert(carrinho.map(produto => ({
-                produto_id: produto.id,
-                numero_mesa: mesa,
-                quantidade: produto.quantidade,
-                valor_unitario: produto.preco
-            })));
+            // Aqui você deve implementar a lógica para salvar os itens do pedido na tabela 'itens_pedido' no Supabase
+            for (const produto of carrinho) {
+                const { data, error } = await supabaseClient
+                    .from('itens_pedido')
+                    .insert([
+                        { produto_id: produto.id, numero_mesa: mesa, quantidade: produto.quantidade, valor_unitario: produto.preco }
+                    ]);
 
-            if (error) {
-                console.error('Erro ao finalizar o pedido:', error);
-                alert('Erro ao finalizar o pedido. Tente novamente.');
-            } else {
-                alert('Pedido finalizado com sucesso!');
-                limparCarrinho(); // Limpa o carrinho após finalizar o pedido
+                if (error) {
+                    console.error('Erro ao inserir no banco de dados:', error);
+                }
             }
-        });
 
-        // Limpar o pedido
-        document.getElementById('limpar-pedido').addEventListener('click', () => {
-            limparCarrinho(); // Limpa o carrinho
-        });
+            alert('Pedido finalizado com sucesso!'); // Mensagem de sucesso
+            localStorage.removeItem('carrinho'); // Limpa o carrinho
+            location.reload(); // Atualiza a página
+        };
+
+        // Limpa o carrinho
+        document.getElementById('limpar-pedido').onclick = function() {
+            carrinho = []; // Limpa o array do carrinho
+            localStorage.removeItem('carrinho'); // Limpa o localStorage
+            renderCarrinho(); // Atualiza a renderização do carrinho
+        };
+
+        // Renderiza o carrinho na carga inicial
+        renderCarrinho();
     </script>
 </body>
 </html>
