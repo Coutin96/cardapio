@@ -44,29 +44,26 @@
             color: #6c757d;
         }
 
-        /* Estilos do formulário */
-        .formulario {
+        /* Estilo do campo de entrada */
+        .input-container {
             text-align: center;
-            margin-bottom: 20px;
+            margin: 20px 0;
         }
 
-        .mesa-info {
-            text-align: center;
-            margin-top: 20px;
-            font-weight: bold;
+        .input-container input {
+            padding: 10px;
+            font-size: 16px;
+            width: 50%;
         }
     </style>
 </head>
 <body>
     <h1>Histórico de Pedidos</h1>
-
-    <div class="formulario">
+    
+    <div class="input-container">
         <label for="numeroMesa">Informe a mesa:</label>
-        <input type="number" id="numeroMesa" min="1" max="100" required>
-        <button id="verificarMesa">Verificar</button>
+        <input type="number" id="numeroMesa" min="1" max="100" placeholder="Número da Mesa">
     </div>
-
-    <div class="mesa-info" id="mesaInfo"></div>
 
     <div class="pedidos" id="pedidos"></div>
 
@@ -81,23 +78,17 @@
     <script>
         // Inicializa o Supabase
         const supabaseUrl = 'https://chcysijsjivahlaekhlw.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNoY3lzaWpzaml2YWhsYWVraGx3Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcyODk3NzgwNywiZXhwIjoyMDQ0NTUzODA3fQ.vGRBGeF8y-GU2hNeuNu4XW1CSu1Pa0j747UZicUrifM'; // Coloque sua chave aqui
+        const supabaseKey = 'sua_chave_aqui'; // Coloque sua chave aqui
         const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
         // Função para verificar se o número da mesa é válido
-        function verificarNumeroMesa(numeroMesa) {
-            const numero = parseInt(numeroMesa);
+        function verificarNumeroMesa(numero_Mesa) {
+            const numero = parseInt(numero_Mesa);
             return !isNaN(numero) && numero >= 1 && numero <= 100;
         }
 
-        // Carrega os pedidos do histórico
+        // Função para carregar pedidos do histórico
         async function carregarHistorico(mesa) {
-            // Verifica se o número da mesa é válido
-            if (!verificarNumeroMesa(mesa)) {
-                document.getElementById('pedidos').innerHTML = '<p>Número da mesa inválido. Por favor, verifique e tente novamente.</p>';
-                return;
-            }
-
             const { data, error } = await supabaseClient
                 .from('itens_pedido')
                 .select('produto_id, quantidade, valor_unitario')
@@ -111,9 +102,6 @@
 
             const pedidosContainer = document.getElementById('pedidos');
             pedidosContainer.innerHTML = ''; // Limpa a lista antes de preencher
-
-            // Sempre exibe o número da mesa procurado
-            document.getElementById('mesaInfo').innerHTML = `Histórico de pedidos para a mesa: ${mesa}`;
 
             if (data.length === 0) {
                 pedidosContainer.innerHTML = '<p>Nenhum pedido encontrado para esta mesa.</p>';
@@ -133,11 +121,28 @@
             });
         }
 
-        // Ação ao clicar no botão "Verificar"
-        document.getElementById('verificarMesa').addEventListener('click', () => {
-            const mesa = document.getElementById('numeroMesa').value; // Obtém o número da mesa digitado
-            carregarHistorico(mesa); // Carrega o histórico para o número da mesa digitado
+        // Função para carregar o número da mesa
+        function carregarNumeroMesa() {
+            const mesa = localStorage.getItem('numero_Mesa');
+            if (mesa) {
+                document.getElementById('numero_Mesa').value = mesa;
+                carregarHistorico(mesa);
+            }
+        }
+
+        // Armazena o número da mesa no localStorage ao alterar
+        document.getElementById('numero_Mesa').addEventListener('input', function() {
+            const mesa = this.value;
+            if (verificarNumeroMesa(mesa)) {
+                localStorage.setItem('numero_Mesa', mesa);
+                carregarHistorico(mesa);
+            } else {
+                document.getElementById('pedidos').innerHTML = '<p>Número da mesa inválido. Por favor, verifique e tente novamente.</p>';
+            }
         });
+
+        // Carrega o número da mesa e os pedidos ao abrir a página
+        document.addEventListener('DOMContentLoaded', carregarNumeroMesa);
     </script>
 </body>
 </html>
