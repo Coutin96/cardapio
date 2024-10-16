@@ -6,151 +6,72 @@
     <title>Histórico de Pedidos</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/umd/supabase.js"></script>
     <style>
-        /* Estilos globais */
         body {
             font-family: Arial, sans-serif;
             padding: 20px;
         }
-
         h1 {
             text-align: center;
         }
-
         .pedido {
             border: 1px solid #ccc;
-            border-radius: 5px;
             padding: 10px;
-            margin: 10px 0;
+            margin-bottom: 10px;
         }
-
-        .pedido h2 {
-            font-size: 20px;
+        .pedido h3 {
             margin: 0;
         }
-
-        .pedido p {
-            margin: 5px 0;
-        }
-
-        .produto-imagem {
-            max-width: 100px;
-            height: auto;
-        }
-
-        .total {
-            font-weight: bold;
-            font-size: 1.2em;
-            margin-top: 20px;
+        .itens {
+            margin-top: 10px;
         }
     </style>
 </head>
 <body>
     <h1>Histórico de Pedidos</h1>
-    <div id="historico" class="historico"></div>
-    <div id="valorTotal" class="total"></div>
-
+    <div id="historico"></div>
+    
     <script>
         // Inicializa o Supabase
         const supabaseUrl = 'https://chcysijsjivahlaekhlw.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNoY3lzaWpzaml2YWhsYWVraGx3Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcyODk3NzgwNywiZXhwIjoyMDQ0NTUzODA3fQ.vGRBGeF8y-GU2hNeuNu4XW1CSu1Pa0j747UZicUrifM';
         const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
-        // Função para carregar os produtos
-        async function carregarProdutos() {
-            try {
-                const { data: produtos, error } = await supabaseClient
-                    .from('produtos')
-                    .select('*');
+        // Carrega o histórico de pedidos
+        async function carregarHistorico() {
+            const { data, error } = await supabaseClient
+                .from('itens_pedido')
+                .select('*')
+                .order('id', { ascending: false }); // Ordena do mais recente para o mais antigo
 
-                if (error) throw error;
+            if (error) {
+                console.error('Erro ao carregar histórico:', error);
+                document.getElementById('historico').innerHTML = '<p>Erro ao carregar histórico de pedidos.</p>';
+            } else {
+                const historicoDiv = document.getElementById('historico');
+                historicoDiv.innerHTML = '';
 
-                return produtos;
-            } catch (error) {
-                console.error('Erro ao carregar produtos:', error);
-                return null;
-            }
-        }
-
-        // Função para buscar os pedidos de uma mesa específica
-        async function buscarPedidosPorMesa(numeroMesa) {
-            try {
-                const { data: pedidos, error } = await supabaseClient
-                    .from('itens_pedido')
-                    .select('*')
-                    .eq('numero_mesa', numeroMesa); // Filtra pelos pedidos da mesa
-
-                if (error) throw error;
-
-                return pedidos;
-            } catch (error) {
-                console.error('Erro ao buscar pedidos por mesa:', error);
-                return null;
-            }
-        }
-
-        // Função para buscar o histórico de pedidos
-        async function buscarHistorico() {
-            const numeroMesa = localStorage.getItem('numeroMesa'); // Recupera o número da mesa do localStorage
-
-            if (!numeroMesa) {
-                document.getElementById('historico').innerHTML = 'Por favor, finalize um pedido primeiro para ver o histórico.';
-                return;
-            }
-
-            // Busca os pedidos da mesa
-            const pedidosMesa = await buscarPedidosPorMesa(numeroMesa);
-            if (!pedidosMesa) {
-                document.getElementById('historico').innerHTML = 'Erro ao buscar pedidos para a mesa.';
-                return;
-            }
-
-            // Carrega todos os produtos
-            const produtos = await carregarProdutos();
-            if (!produtos) {
-                document.getElementById('historico').innerHTML = 'Erro ao carregar produtos.';
-                return;
-            }
-
-            if (pedidosMesa.length === 0) {
-                document.getElementById('historico').innerHTML = 'Nenhum pedido encontrado para este número de mesa.';
-                return;
-            }
-
-            let valorTotalGeral = 0;
-
-            const historicoContainer = document.getElementById('historico');
-            historicoContainer.innerHTML = '';
-
-            for (const pedido of pedidosMesa) {
-                const produto = produtos.find(prod => prod.id === pedido.produto_id);
-                
-                if (!produto) {
-                    console.error(`Produto com ID ${pedido.produto_id} não encontrado.`);
-                    continue;
+                if (data.length === 0) {
+                    historicoDiv.innerHTML = '<p>Nenhum pedido encontrado. Faça um pedido para visualizar o histórico.</p>';
+                } else {
+                    data.forEach(pedido => {
+                        const pedidoDiv = document.createElement('div');
+                        pedidoDiv.classList.add('pedido');
+                        pedidoDiv.innerHTML = `
+                            <h3>Pedido ID: ${pedido.id} - Mesa: ${pedido.numero_mesa}</h3>
+                            <div class="itens">
+                                <strong>Produto ID: ${pedido.produto_id}</strong> <br>
+                                <strong>Quantidade:</strong> ${pedido.quantidade} <br>
+                                <strong>Valor Unitário:</strong> R$ ${pedido.valor_unitario.toFixed(2)} <br>
+                            </div>
+                        `;
+                        historicoDiv.appendChild(pedidoDiv);
+                    });
                 }
-
-                const valorTotal = pedido.valor_unitario * pedido.quantidade;
-                valorTotalGeral += valorTotal;
-
-                const divPedido = document.createElement('div');
-                divPedido.classList.add('pedido');
-                divPedido.innerHTML = `
-                    <h2>Pedido ID: ${pedido.id}</h2>
-                    <p>Número da Mesa: ${pedido.numero_mesa}</p>
-                    <p>Produto: ${produto.nome}</p>
-                    <img src="${produto.foto_url}" alt="Imagem do Produto" class="produto-imagem">
-                    <p>Quantidade: ${pedido.quantidade}</p>
-                    <p>Valor Unitário: R$ ${pedido.valor_unitario.toFixed(2)}</p>
-                    <p>Valor Total: R$ ${valorTotal.toFixed(2)}</p>
-                `;
-                historicoContainer.appendChild(divPedido);
             }
-
-            document.getElementById('valorTotal').innerHTML = `Valor Total de Todos os Pedidos: R$ ${valorTotalGeral.toFixed(2)}`;
         }
 
-        // Chama a função para buscar o histórico ao carregar a página
-        document.addEventListener('DOMContentLoaded', buscarHistorico);
+        // Carrega o histórico ao abrir a página
+        document.addEventListener('DOMContentLoaded', carregarHistorico);
     </script>
 </body>
 </html>
