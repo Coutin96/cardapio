@@ -131,8 +131,6 @@
         <button id="finalizar-pedido">Finalizar Pedido</button>
     </div>
 
-    <p></p>
-
     <div style="text-align: center;">
         <a href="historico.html"><b>Ver Histórico de Pedidos</b></a>
     </div>
@@ -144,7 +142,7 @@
         const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
         // Lista de produtos no carrinho
-        let carrinho = [];
+        let carrinho = JSON.parse(localStorage.getItem('carrinho')) || []; // Carrega o carrinho do localStorage
 
         // Exibe o carrinho de compras
         function renderCarrinho() {
@@ -199,9 +197,9 @@
                 // Se o produto não existe, adicione-o com quantidade 1
                 const novoProduto = {
                     id: id,
-                    nome: "Produto " + id, // Substitua com a lógica para obter o nome do produto
-                    preco: 10.0, // Substitua com a lógica para obter o preço do produto
-                    foto_url: "https://via.placeholder.com/50", // Substitua com a lógica para obter a imagem do produto
+                    nome: "Produto " + id, // Lógica para obter o nome do produto deve ser implementada
+                    preco: 10.0, // Lógica para obter o preço do produto deve ser implementada
+                    foto_url: "https://via.placeholder.com/50", // Lógica para obter a imagem do produto deve ser implementada
                     quantidade: 1
                 };
                 carrinho.push(novoProduto);
@@ -240,12 +238,8 @@
             renderCarrinho(); // Atualiza a interface
         }
 
-        // Busca produtos do localStorage e exibe no carrinho
-        document.addEventListener('DOMContentLoaded', () => {
-            const produtosSalvos = JSON.parse(localStorage.getItem('carrinho')) || [];
-            carrinho = produtosSalvos;
-            renderCarrinho();
-        });
+        // Exibe o carrinho ao carregar a página
+        document.addEventListener('DOMContentLoaded', renderCarrinho);
 
         // Finaliza o pedido
         document.getElementById('finalizar-pedido').addEventListener('click', async () => {
@@ -261,27 +255,33 @@
                 return;
             }
 
+            const pedido = {
+                mesa: mesa,
+                itens: carrinho.map(item => ({
+                    produto_id: item.id,
+                    quantidade: item.quantidade,
+                    valor_unitario: item.preco
+                }))
+            };
+
+            // Insere o pedido no banco de dados
             const { data, error } = await supabaseClient
                 .from('itens_pedido')
-                .insert(carrinho.map(produto => ({
-                    produto_id: produto.id,
-                    numero_mesa: mesa,
-                    quantidade: produto.quantidade,
-                    valor_unitario: produto.preco
-                })));
+                .insert(pedido.itens)
+                .select();
 
             if (error) {
-                alert('Erro ao finalizar pedido: ' + error.message);
+                console.error('Erro ao inserir pedido:', error);
+                alert('Erro ao finalizar o pedido. Tente novamente.');
             } else {
                 alert('Pedido finalizado com sucesso!');
-                limparCarrinho(); // Limpa o carrinho após finalizar
+                limparCarrinho(); // Limpa o carrinho após finalizar o pedido
+                document.getElementById('mesa').value = ''; // Limpa o campo mesa
             }
         });
 
-        // Evento para limpar pedido
-        document.getElementById('limpar-pedido').addEventListener('click', () => {
-            limparCarrinho(); // Limpa o carrinho
-        });
+        // Limpa o pedido ao clicar no botão
+        document.getElementById('limpar-pedido').addEventListener('click', limparCarrinho);
     </script>
 </body>
 </html>
