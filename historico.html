@@ -81,11 +81,12 @@
 
             const { data, error } = await supabaseClient
                 .from('itens_pedido')
-                .select('*')
+                .select('produto_id, quantidade, valor_unitario')
                 .eq('numero_mesa', mesa); // Filtra pedidos pela mesa
 
             if (error) {
                 console.error('Erro ao carregar histórico:', error);
+                document.getElementById('pedidos').innerHTML = '<p>Ocorreu um erro ao carregar os pedidos. Tente novamente mais tarde.</p>';
                 return;
             }
 
