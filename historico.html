@@ -78,7 +78,7 @@
     <script>
         // Inicializa o Supabase
         const supabaseUrl = 'https://chcysijsjivahlaekhlw.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNoY3lzaWpzaml2YWhsYWVraGx3Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcyODk3NzgwNywiZXhwIjoyMDQ0NTUzODA3fQ.vGRBGeF8y-GU2hNeuNu4XW1CSu1Pa0j747UZicUrifM'; // Coloque sua chave aqui
+        const supabaseKey = 'sua_chave_aqui'; // Coloque sua chave aqui
         const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
         // Função para verificar se o número da mesa é válido
@@ -123,18 +123,18 @@
 
         // Função para carregar o número da mesa
         function carregarNumeroMesa() {
-            const mesa = localStorage.getItem('numero_Mesa');
+            const mesa = localStorage.getItem('numero_mesa'); // Aqui usamos 'numero_mesa' com underline
             if (mesa) {
-                document.getElementById('numero_Mesa').value = mesa;
+                document.getElementById('numeroMesa').value = mesa;
                 carregarHistorico(mesa);
             }
         }
 
         // Armazena o número da mesa no localStorage ao alterar
-        document.getElementById('numero_Mesa').addEventListener('input', function() {
+        document.getElementById('numeroMesa').addEventListener('input', function() {
             const mesa = this.value;
             if (verificarNumeroMesa(mesa)) {
-                localStorage.setItem('numero_Mesa', mesa);
+                localStorage.setItem('numero_mesa', mesa); // Aqui usamos 'numero_mesa' com underline
                 carregarHistorico(mesa);
             } else {
                 document.getElementById('pedidos').innerHTML = '<p>Número da mesa inválido. Por favor, verifique e tente novamente.</p>';
