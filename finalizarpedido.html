@@ -42,20 +42,19 @@
         }
 
         .produto-info {
-            flex: 1; /* Ocupa o espaço restante */
+            flex: 1;
             display: flex;
-            align-items: center; /* Centraliza verticalmente */
+            align-items: center;
         }
 
         .produto-nome {
-            margin-left: 10px; /* Espaçamento entre a imagem e o nome */
+            margin-left: 10px;
         }
 
-        /* Estilo para o preço e total */
         .preco-container {
             display: flex;
-            flex-direction: column; /* Alinha o preço e o total em coluna */
-            align-items: flex-end; /* Alinha à direita */
+            flex-direction: column;
+            align-items: flex-end;
         }
 
         .produto-carrinho button {
@@ -98,7 +97,7 @@
             margin: 20px 0;
             text-align: center;
         }
-        
+
         /* Estilo para o botão de limpar pedido */
         .btn-limpar {
             text-align: center;
@@ -106,7 +105,7 @@
         }
 
         .btn-limpar button {
-            background-color: #dc3545; /* Cor do botão de limpar */
+            background-color: #dc3545;
             color: white;
             padding: 10px 20px;
             border: none;
@@ -114,7 +113,7 @@
         }
 
         .btn-limpar button:hover {
-            background-color: #c82333; /* Cor do botão de limpar ao passar o mouse */
+            background-color: #c82333;
         }
 
         /* Estilo do rodapé */
@@ -124,6 +123,32 @@
             color: #6c757d;
         }
 
+        /* Estilos do histórico de pedidos */
+        .historico-container {
+            margin-top: 40px;
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .historico-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .historico-table th, .historico-table td {
+            padding: 10px;
+            border: 1px solid #ccc;
+            text-align: left;
+        }
+
+        .historico-table th {
+            background-color: #343a40;
+            color: white;
+        }
     </style>
 </head>
 <body>
@@ -145,27 +170,39 @@
         <button id="finalizar-pedido">Finalizar Pedido</button>
     </div>
 
-    <p> </p>
-
-    <p></p>
+    <!-- Seção do histórico de pedidos -->
+    <div class="historico-container">
+        <h2>Histórico de Pedidos</h2>
+        <table class="historico-table">
+            <thead>
+                <tr>
+                    <th>Produto</th>
+                    <th>Quantidade</th>
+                    <th>Valor Unitário</th>
+                    <th>Valor Total</th>
+                </tr>
+            </thead>
+            <tbody id="historico-pedidos">
+                <!-- Histórico será inserido aqui -->
+            </tbody>
+        </table>
+    </div>
 
     <script>
         // Inicializa o Supabase
         const supabaseUrl = 'https://chcysijsjivahlaekhlw.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNoY3lzaWpzaml2YWhsYWVraGx3Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcyODk3NzgwNywiZXhwIjoyMDQ0NTUzODA3fQ.vGRBGeF8y-GU2hNeuNu4XW1CSu1Pa0j747UZicUrifM'; // Coloque sua chave aqui
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNoY3lzaWpzaml2YWhsYWVraGx3Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcyODk3NzgwNywiZXhwIjoyMDQ0NTUzODA3fQ.vGRBGeF8y-GU2hNeuNu4XW1CSu1Pa0j747UZicUrifM';
         const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
-        // Lista de produtos no carrinho
-        let carrinho = JSON.parse(localStorage.getItem('carrinho')) || []; // Carrega o carrinho do localStorage
+        let carrinho = JSON.parse(localStorage.getItem('carrinho')) || [];
 
-        // Exibe o carrinho de compras
         function renderCarrinho() {
             const carrinhoContainer = document.getElementById('carrinho');
             carrinhoContainer.innerHTML = '';
             let total = 0;
 
             carrinho.forEach(produto => {
-                total += produto.preco * produto.quantidade; // Atualiza total com base na quantidade
+                total += produto.preco * produto.quantidade;
                 const divProduto = document.createElement('div');
                 divProduto.classList.add('produto-carrinho');
 
@@ -186,7 +223,6 @@
                 carrinhoContainer.appendChild(divProduto);
             });
 
-            // Adiciona o total abaixo dos produtos
             const divTotal = document.createElement('div');
             divTotal.className = 'produto-carrinho';
             divTotal.innerHTML = `
@@ -200,36 +236,30 @@
             carrinhoContainer.appendChild(divTotal);
         }
 
-        // Adiciona um produto ao carrinho
         function adicionarAoCarrinho(id) {
             const produtoExistente = carrinho.find(produto => produto.id === id);
 
             if (produtoExistente) {
-                // Incrementa a quantidade do produto
                 produtoExistente.quantidade += 1;
             } else {
-                // Se o produto não existe, adicione-o com quantidade 1
                 const novoProduto = {
                     id: id,
-                    nome: "Produto " + id, // Lógica para obter o nome do produto deve ser implementada
-                    preco: 10.0, // Lógica para obter o preço do produto deve ser implementada
-                    foto_url: "https://via.placeholder.com/50", // Lógica para obter a imagem do produto deve ser implementada
+                    nome: "Produto " + id,
+                    preco: 10.0,
+                    foto_url: "https://via.placeholder.com/50",
                     quantidade: 1
                 };
                 carrinho.push(novoProduto);
             }
 
-            // Salva o carrinho no localStorage
             localStorage.setItem('carrinho', JSON.stringify(carrinho));
-            renderCarrinho(); // Atualiza a renderização do carrinho
+            renderCarrinho();
         }
 
-        // Remove um produto do carrinho
         function removerDoCarrinho(id) {
             const produtoIndex = carrinho.findIndex(produto => produto.id === id);
 
             if (produtoIndex > -1) {
-                // Diminui a quantidade ou remove o produto
                 carrinho[produtoIndex].quantidade -= 1;
 
                 if (carrinho[produtoIndex].quantidade <= 0) {
@@ -237,52 +267,81 @@
                 }
             }
 
-            // Salva o carrinho no localStorage
             localStorage.setItem('carrinho', JSON.stringify(carrinho));
-            renderCarrinho(); // Atualiza a renderização do carrinho
+            renderCarrinho();
         }
 
-        // Finaliza o pedido
-        document.getElementById('finalizar-pedido').onclick = async function() {
-            const mesa = document.getElementById('mesa').value;
+        function limparCarrinho() {
+            localStorage.removeItem('carrinho');
+            carrinho = [];
+            renderCarrinho();
+        }
 
-            // Verifica se o campo mesa está vazio ou fora do intervalo
-            if (!mesa || mesa < 1 || mesa > 100) {
-                alert('Por favor, insira um número de mesa válido entre 1 e 100.');
+        document.getElementById('limpar-pedido').addEventListener('click', limparCarrinho);
+
+        document.getElementById('finalizar-pedido').addEventListener('click', async () => {
+            const mesa = document.getElementById('mesa').value;
+            if (!mesa) {
+                alert('Informe o número da mesa!');
                 return;
             }
 
-            // Aqui você deve implementar a lógica para salvar os itens do pedido na tabela 'itens_pedido' no Supabase
-            for (const produto of carrinho) {
-                const { data, error } = await supabaseClient
-                    .from('itens_pedido')
-                    .insert([
-                        { produto_id: produto.id, numero_mesa: mesa, quantidade: produto.quantidade, valor_unitario: produto.preco, nome:produto.nome }
-                    ]);
+            const { error } = await supabaseClient
+                .from('itens_pedido')
+                .insert(carrinho.map(produto => ({
+                    produto_id: produto.id,
+                    nome: produto.nome,
+                    numero_mesa: mesa,
+                    quantidade: produto.quantidade,
+                    valor_unitario: produto.preco
+                })));
 
-                if (error) {
-                    console.error('Erro ao inserir no banco de dados:', error);
-                }
+            if (error) {
+                alert('Erro ao finalizar o pedido: ' + error.message);
+            } else {
+                alert('Pedido finalizado com sucesso!');
+                limparCarrinho();
+            }
+        });
+
+        // Função para carregar o histórico de pedidos da mesa
+        async function carregarHistoricoPedidos(mesa) {
+            const { data, error } = await supabaseClient
+                .from('itens_pedido')
+                .select('*')
+                .eq('numero_mesa', mesa);
+
+            if (error) {
+                alert('Erro ao carregar histórico: ' + error.message);
+                return;
             }
 
-            alert('Pedido finalizado com sucesso!'); // Mensagem de sucesso
-            localStorage.removeItem('carrinho'); // Limpa o carrinho
-            location.reload(); // Atualiza a página
-        };
+            const historicoContainer = document.getElementById('historico-pedidos');
+            historicoContainer.innerHTML = '';
 
-        // Limpa o carrinho
-        document.getElementById('limpar-pedido').onclick = function() {
-            carrinho = []; // Limpa o array do carrinho
-            localStorage.removeItem('carrinho'); // Limpa o localStorage
-            renderCarrinho(); // Atualiza a renderização do carrinho
-        };
+            data.forEach(pedido => {
+                const valorTotal = pedido.quantidade * pedido.valor_unitario;
+                const row = `
+                    <tr>
+                        <td>${pedido.nome}</td>
+                        <td>${pedido.quantidade}</td>
+                        <td>R$ ${pedido.valor_unitario.toFixed(2)}</td>
+                        <td>R$ ${valorTotal.toFixed(2)}</td>
+                    </tr>
+                `;
+                historicoContainer.innerHTML += row;
+            });
+        }
 
-        // Renderiza o carrinho na carga inicial
+        // Atualiza o histórico automaticamente quando a mesa é alterada
+        document.getElementById('mesa').addEventListener('change', (event) => {
+            const mesa = event.target.value;
+            if (mesa) {
+                carregarHistoricoPedidos(mesa);
+            }
+        });
+
         renderCarrinho();
     </script>
 </body>
 </html>
-
-<footer>
-    <p>&copy; 2024 Seu Restaurante. Todos os direitos reservados.</p>
-</footer>
