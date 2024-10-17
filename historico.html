@@ -76,6 +76,12 @@
             margin-top: 30px;
             color: #6c757d;
         }
+
+        .valor-total {
+            font-weight: bold;
+            margin-top: 20px;
+            text-align: right;
+        }
     </style>
 </head>
 <body>
@@ -101,6 +107,10 @@
                 <!-- Histórico será inserido aqui -->
             </tbody>
         </table>
+
+        <div class="valor-total" id="valor-total">
+            <!-- Total será exibido aqui -->
+        </div>
     </div>
 
     <script>
@@ -122,7 +132,10 @@
             }
 
             const historicoContainer = document.getElementById('historico-pedidos');
+            const valorTotalContainer = document.getElementById('valor-total');
+            let somaTotal = 0;
             historicoContainer.innerHTML = '';
+            valorTotalContainer.innerHTML = '';
 
             if (data.length === 0) {
                 historicoContainer.innerHTML = '<tr><td colspan="4">Nenhum pedido encontrado para esta mesa.</td></tr>';
@@ -131,6 +144,8 @@
 
             data.forEach(pedido => {
                 const valorTotal = pedido.quantidade * pedido.valor_unitario;
+                somaTotal += valorTotal;
+
                 const row = `
                     <tr>
                         <td>${pedido.nome}</td>
@@ -141,6 +156,9 @@
                 `;
                 historicoContainer.innerHTML += row;
             });
+
+            // Exibe a soma total de todos os pedidos
+            valorTotalContainer.innerHTML = `Valor total de todos os pedidos: R$ ${somaTotal.toFixed(2)}`;
         }
 
         // Função para consultar o histórico de uma mesa específica
