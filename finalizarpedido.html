@@ -149,14 +149,6 @@
 
     <p></p>
 
-    <div style="text-align: center;">
-        <a href="historico.html"><b>Ver Histórico de Pedidos</b></a>
-    </div>
-
-    <footer>
-        <p>&copy; 2024 Seu Restaurante. Todos os direitos reservados.</p>
-    </footer>
-
     <script>
         // Inicializa o Supabase
         const supabaseUrl = 'https://chcysijsjivahlaekhlw.supabase.co';
@@ -265,7 +257,7 @@
                 const { data, error } = await supabaseClient
                     .from('itens_pedido')
                     .insert([
-                        { produto_id: produto.id, numero_mesa: mesa, quantidade: produto.quantidade, valor_unitario: produto.preco }
+                        { produto_id: produto.id, numero_mesa: mesa, quantidade: produto.quantidade, valor_unitario: produto.preco, nome:produto.nome }
                     ]);
 
                 if (error) {
@@ -290,3 +282,7 @@
     </script>
 </body>
 </html>
+
+<footer>
+    <p>&copy; 2024 Seu Restaurante. Todos os direitos reservados.</p>
+</footer>
