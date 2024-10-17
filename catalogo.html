@@ -32,8 +32,8 @@
             margin: 0 auto; /* Centraliza o catálogo na tela */
         }
 
-           /* Estilos para o campo de busca */
-           .busca {
+        /* Estilos para o campo de busca */
+        .busca {
             text-align: center;
             margin-bottom: 20px;
             position: sticky; /* Fixa o campo de busca no topo */
@@ -133,9 +133,12 @@
 </head>
 <body>
     <h1>Catálogo de Produtos</h1>
-    
-        <!-- Campo de busca -->
-    
+
+    <!-- Campo de busca -->
+    <div class="busca">
+        <input type="text" id="campoBusca" placeholder="Buscar produtos..." oninput="filtrarProdutos()">
+    </div>
+
     <div id="loading">Carregando produtos...</div>
     <div class="catalogo" id="catalogo"></div>
 
@@ -146,14 +149,16 @@
     <script>
         // Inicializa o Supabase
         const supabaseUrl = 'https://chcysijsjivahlaekhlw.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNoY3lzaWpzaml2YWhsYWVraGx3Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcyODk3NzgwNywiZXhwIjoyMDQ0NTUzODA3fQ.vGRBGeF8y-GU2hNeuNu4XW1CSu1Pa0j747UZicUrifM'; // Substitua pela sua chave de API
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNoY3lzaWpzaml2YWhsYWVraGx3Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcyODk3NzgwNywiZXhwIjoyMDQ0NTUzODA3fQ.vGRBGeF8y-GU2hNeuNu4XW1CSu1Pa0j747UZicUrifM';
         const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+
+        let produtos = [];
 
         document.addEventListener('DOMContentLoaded', async function() {
             document.getElementById('loading').style.display = 'block'; // Exibe indicador de carregamento
             
             // Busca os produtos cadastrados no Supabase
-            const { data: produtos, error } = await supabaseClient
+            const { data, error } = await supabaseClient
                 .from('produtos') // Referência à tabela 'produtos'
                 .select('*');
 
@@ -165,10 +170,16 @@
                 return;
             }
 
-            const catalogo = document.getElementById('catalogo');
+            produtos = data;
+            exibirProdutos(produtos); // Exibe os produtos ao carregar a página
+        });
 
-            // Adiciona cada produto ao catálogo
-            produtos.forEach(produto => {
+        // Função para exibir os produtos no catálogo
+        function exibirProdutos(produtosExibir) {
+            const catalogo = document.getElementById('catalogo');
+            catalogo.innerHTML = ''; // Limpa o catálogo
+
+            produtosExibir.forEach(produto => {
                 const divProduto = document.createElement('div');
                 divProduto.classList.add('produto');
 
@@ -189,7 +200,14 @@
 
                 catalogo.appendChild(divProduto);
             });
-        });
+        }
+
+        // Função para filtrar os produtos com base na busca
+        function filtrarProdutos() {
+            const termoBusca = document.getElementById('campoBusca').value.toLowerCase();
+            const produtosFiltrados = produtos.filter(produto => produto.nome.toLowerCase().includes(termoBusca));
+            exibirProdutos(produtosFiltrados);
+        }
 
         // Função para adicionar um produto ao carrinho
         function adicionarAoCarrinho(id, nome, preco, foto_url) {
@@ -197,44 +215,31 @@
             const produtoExistente = carrinho.find(p => p.id === id);
 
             if (produtoExistente) {
-                // Incrementa a quantidade se o produto já estiver no carrinho
                 produtoExistente.quantidade += 1;
             } else {
-                // Adiciona novo produto com quantidade 1
-                const produto = { id, nome, preco, foto_url, quantidade: 1 };
-                carrinho.push(produto);
+                carrinho.push({ id, nome, preco, quantidade: 1, foto_url });
             }
 
             localStorage.setItem('carrinho', JSON.stringify(carrinho));
-            document.getElementById(`quantidade-${id}`).innerText = produtoExistente ? produtoExistente.quantidade : 1;
-            alert('Produto adicionado ao carrinho! Quantidade: ' + (produtoExistente ? produtoExistente.quantidade : 1));
+            document.getElementById(`quantidade-${id}`).textContent = carrinho.find(p => p.id === id).quantidade;
         }
 
         // Função para remover um produto do carrinho
         function removerDoCarrinho(id) {
             let carrinho = JSON.parse(localStorage.getItem('carrinho')) || [];
-            const produtoExistente = carrinho.find(produto => produto.id === id);
+            const produtoExistente = carrinho.find(p => p.id === id);
 
-            if (produtoExistente) {
-                if (produtoExistente.quantidade > 1) {
-                    // Decrementa a quantidade
-                    produtoExistente.quantidade -= 1;
-                    alert('Uma unidade removida do carrinho! Quantidade atual: ' + produtoExistente.quantidade);
-                } else {
-                    // Remove produto do carrinho se a quantidade for 1
-                    carrinho = carrinho.filter(produto => produto.id !== id);
-                    alert('Produto removido do carrinho.');
-                }
-            } else {
-                alert('Produto não encontrado no carrinho.');
+            if (produtoExistente && produtoExistente.quantidade > 0) {
+                produtoExistente.quantidade -= 1;
+            }
+
+            if (produtoExistente.quantidade === 0) {
+                carrinho = carrinho.filter(p => p.id !== id);
             }
 
             localStorage.setItem('carrinho', JSON.stringify(carrinho));
-            document.getElementById(`quantidade-${id}`).innerText = produtoExistente ? produtoExistente.quantidade : 0;
+            document.getElementById(`quantidade-${id}`).textContent = carrinho.find(p => p.id === id)?.quantidade || 0;
         }
     </script>
-    <footer style="text-align: center;">
-        <p>&copy; <b>2024 Renan Paim Couto. Todos os direitos reservados.</b></p>
-     </footer>
 </body>
-</html
+</html>
