@@ -26,6 +26,35 @@
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
 
+        .mesa-input {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .mesa-input input {
+            width: 80px;
+            padding: 10px;
+            font-size: 16px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            margin-right: 10px;
+        }
+
+        .mesa-input button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #343a40;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .mesa-input button:hover {
+            background-color: #495057;
+        }
+
         .historico-table {
             width: 100%;
             border-collapse: collapse;
@@ -53,7 +82,12 @@
 
     <h1>Histórico de Pedidos</h1>
     <div class="historico-container">
-        <h2>Histórico de Pedidos</h2>
+        <!-- Campo para inserir o número da mesa -->
+        <div class="mesa-input">
+            <input type="number" id="numero-mesa" placeholder="Mesa" min="1" max="100">
+            <button onclick="consultarHistorico()">Consultar</button>
+        </div>
+
         <table class="historico-table">
             <thead>
                 <tr>
@@ -90,6 +124,11 @@
             const historicoContainer = document.getElementById('historico-pedidos');
             historicoContainer.innerHTML = '';
 
+            if (data.length === 0) {
+                historicoContainer.innerHTML = '<tr><td colspan="4">Nenhum pedido encontrado para esta mesa.</td></tr>';
+                return;
+            }
+
             data.forEach(pedido => {
                 const valorTotal = pedido.quantidade * pedido.valor_unitario;
                 const row = `
@@ -104,8 +143,15 @@
             });
         }
 
-        // Carregar histórico da mesa 1 por padrão (pode ser alterado)
-        carregarHistoricoPedidos(1);  // Altere para a mesa desejada
+        // Função para consultar o histórico de uma mesa específica
+        function consultarHistorico() {
+            const mesa = document.getElementById('numero-mesa').value;
+            if (mesa && mesa >= 1 && mesa <= 100) {
+                carregarHistoricoPedidos(mesa);
+            } else {
+                alert('Por favor, insira um número de mesa válido (1-100).');
+            }
+        }
     </script>
 
     <footer>
