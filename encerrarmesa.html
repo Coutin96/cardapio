@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Encerrar Mesas</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/umd/supabase.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+
+        h1 {
+            text-align: center;
+            color: #343a40;
+        }
+
+        .btn {
+            padding: 10px 15px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            background-color: #218838;
+        }
+
+        #loading {
+            text-align: center;
+            margin: 20px 0;
+            display: none;
+        }
+
+        /* Estilos para o relatório */
+        .relatorio {
+            margin-top: 20px;
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 5px;
+            background-color: white;
+        }
+    </style>
+</head>
+<body>
+    <h1>Encerrar Mesas</h1>
+
+    <div>
+        <label for="mesa">Escolha o número da mesa:</label>
+        <select id="mesa">
+            <!-- Opções das mesas de 1 a 100 -->
+            <script>
+                for (let i = 1; i <= 100; i++) {
+                    document.write(`<option value="${i}">Mesa ${i}</option>`);
+                }
+            </script>
+        </select>
+        <button class="btn" onclick="encerrarMesa()">Encerrar Mesa</button>
+    </div>
+
+    <div id="loading">Carregando dados...</div>
+
+    <div id="relatorio" class="relatorio" style="display: none;">
+        <h2>Relatório da Mesa</h2>
+        <div id="relatorio-conteudo"></div>
+    </div>
+
+    <footer>
+        <p>&copy; 2024 Renan Paim Couto. Todos os direitos reservados.</p>
+    </footer>
+
+    <script>
+        // Inicializa o Supabase
+        const supabaseUrl = 'https://chcysijsjivahlaekhlw.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNoY3lzaWpzaml2YWhsYWVraGx3Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcyODk3NzgwNywiZXhwIjoyMDQ0NTUzODA3fQ.vGRBGeF8y-GU2hNeuNu4XW1CSu1Pa0j747UZicUrifM'; // Coloque sua chave aqui
+        const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+
+        // Função para encerrar a mesa
+        async function encerrarMesa() {
+            const numeroMesa = document.getElementById('mesa').value;
+            document.getElementById('loading').style.display = 'block';
+
+            // Recupera os pedidos da mesa selecionada
+            const { data: pedidos, error } = await supabaseClient
+                .from('itens_pedido')
+                .select('*')
+                .eq('numero_mesa', numeroMesa);
+
+            if (error) {
+                console.error('Erro ao carregar pedidos:', error);
+                alert('Erro ao carregar pedidos. Verifique o console para mais detalhes.');
+                document.getElementById('loading').style.display = 'none';
+                return;
+            }
+
+            // Calcula o valor total e constrói o relatório
+            let valorTotal = 0;
+            let relatorioConteudo = `<strong>Pedidos da Mesa ${numeroMesa}:</strong><br><br>`;
+            pedidos.forEach(pedido => {
+                valorTotal += pedido.valor_unitario * pedido.quantidade; // Calcula o valor total
+                relatorioConteudo += `Produto: ${pedido.nome}<br>Quantidade: ${pedido.quantidade}<br>Valor Unitário: R$ ${pedido.valor_unitario.toFixed(2)}<br><br>`;
+            });
+
+            // Atualiza o relatório com os dados
+            relatorioConteudo += `<strong>Valor Total a ser Cobrado: R$ ${valorTotal.toFixed(2)}</strong>`;
+            document.getElementById('relatorio-conteudo').innerHTML = relatorioConteudo;
+            document.getElementById('relatorio').style.display = 'block';
+
+            // Remove os pedidos do banco de dados
+            const { error: deleteError } = await supabaseClient
+                .from('itens_pedido')
+                .delete()
+                .eq('numero_mesa', numeroMesa);
+
+            if (deleteError) {
+                console.error('Erro ao encerrar mesa:', deleteError);
+                alert('Erro ao encerrar mesa. Verifique o console para mais detalhes.');
+            }
+
+            document.getElementById('loading').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
