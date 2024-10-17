@@ -141,7 +141,7 @@
         <!-- Formulário para remover produtos -->
         <h1>Remover Produto</h1>
         <form id="form-remover-produto">
-            <input type="text" id="produto-nome" placeholder="Nome do Produto" required>
+            <input type="text" id="produto-id" placeholder="ID do Produto" required>
             <button type="submit">Remover Produto</button>
         </form>
 
@@ -230,11 +230,14 @@
                     return;
                 }
 
+                // Adiciona o caminho completo da URL manualmente
+                const publicURL = `${supabaseUrl}/storage/v1/object/public/produtos/${storageData.path}`;
+
                 // Adiciona o produto ao banco de dados
                 const { data, error } = await supabaseClient
                     .from('produtos') // Referência à tabela de produtos
                     .insert([
-                        { nome, valor: preco, descricao, imagem_url: `${supabaseUrl}/storage/v1/object/public/produtos/${storageData.path}` }
+                        { nome, valor: preco, descricao, imagem_url: publicURL }
                     ]);
 
                 if (error) {
@@ -251,18 +254,18 @@
             document.getElementById('form-remover-produto').addEventListener('submit', async (e) => {
                 e.preventDefault(); // Impede o envio do formulário
 
-                const produtoNome = document.getElementById('produto-nome').value;
+                const produtoId = document.getElementById('produto-id').value;
 
-                if (!produtoNome) {
-                    alert('Por favor, insira o nome do produto.');
+                if (!produtoId) {
+                    alert('Por favor, insira o ID do produto.');
                     return;
                 }
 
-                // Remove o produto do banco de dados pelo nome
+                // Remove o produto do banco de dados
                 const { data, error } = await supabaseClient
                     .from('produtos') // Referência à tabela de produtos
                     .delete()
-                    .eq('nome', produtoNome); // Filtra pelo nome do produto
+                    .eq('id', produtoId); // Filtra pelo ID do produto
 
                 if (error) {
                     console.error('Erro ao remover produto:', error);
