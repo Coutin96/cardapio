@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controle de Pedidos</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/umd/supabase.js"></script>
+    <style>
+        /* Estilos Globais */
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+
+        h1 {
+            text-align: center;
+            color: #343a40;
+        }
+
+        /* Estilos para a tabela */
+        .tabela-controle {
+            width: 100%;
+            max-width: 1000px;
+            margin: 20px auto;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 5px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .tabela-controle th, .tabela-controle td {
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+
+        .tabela-controle th {
+            background-color: #343a40;
+            color: white;
+        }
+
+        .tabela-controle tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        /* Estilos para botões */
+        .btn {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            color: white;
+        }
+
+        .btn-encaminhar {
+            background-color: #17a2b8;
+        }
+
+        .btn-encaminhar:hover {
+            background-color: #138496;
+        }
+
+        .btn-encerrar {
+            background-color: #dc3545;
+        }
+
+        .btn-encerrar:hover {
+            background-color: #c82333;
+        }
+
+        /* Estilo do rodapé */
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #6c757d;
+        }
+
+        /* Indicador de carregamento */
+        #loading {
+            text-align: center;
+            margin: 20px 0;
+            display: none;
+        }
+
+        /* Responsividade */
+        @media (max-width: 768px) {
+            .tabela-controle th, .tabela-controle td {
+                padding: 8px 10px;
+                font-size: 14px;
+            }
+
+            .btn {
+                padding: 6px 10px;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Controle de Pedidos</h1>
+
+    <div id="loading">Carregando dados...</div>
+
+    <table class="tabela-controle">
+        <thead>
+            <tr>
+                <th>Número da Mesa</th>
+                <th>Produtos</th>
+                <th>Status</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody id="tabela-body">
+            <!-- Dados serão inseridos aqui dinamicamente -->
+        </tbody>
+    </table>
+
+    <footer>
+        <p>&copy; 2024 Renan Paim Couto. Todos os direitos reservados.</p>
+    </footer>
+
+    <script>
+        // Inicializa o Supabase
+        const supabaseUrl = 'https://chcysijsjivahlaekhlw.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNoY3lzaWpzaml2YWhsYWVraGx3Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcyODk3NzgwNywiZXhwIjoyMDQ0NTUzODA3fQ.vGRBGeF8y-GU2hNeuNu4XW1CSu1Pa0j747UZicUrifM';
+        const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+
+        // Função para carregar os pedidos
+        async function carregarPedidos() {
+            document.getElementById('loading').style.display = 'block';
+            const { data, error } = await supabaseClient
+                .from('itens_pedido')
+                .select('*');
+
+            document.getElementById('loading').style.display = 'none';
+
+            if (error) {
+                console.error('Erro ao carregar pedidos:', error);
+                alert('Erro ao carregar pedidos. Verifique o console para mais detalhes.');
+                return;
+            }
+
+            // Agrupar pedidos por mesa
+            const pedidosPorMesa = {};
+            data.forEach(pedido => {
+                if (!pedidosPorMesa[pedido.numero_mesa]) {
+                    pedidosPorMesa[pedido.numero_mesa] = {
+                        produtos: [],
+                        status: pedido.status || 'Pendente' // Assume 'Pendente' se não houver status
+                    };
+                }
+                pedidosPorMesa[pedido.numero_mesa].produtos.push(pedido);
+            });
+
+            // Preencher a tabela
+            const tabelaBody = document.getElementById('tabela-body');
+            tabelaBody.innerHTML = ''; // Limpa a tabela
+
+            for (const mesa in pedidosPorMesa) {
+                const produtos = pedidosPorMesa[mesa].produtos;
+                const status = pedidosPorMesa[mesa].status;
+
+                // Concatenar nomes dos produtos e quantidades
+                const produtosTexto = produtos.map(p => `${p.nome} (x${p.quantidade})`).join(', ');
+
+                // Criar linha da tabela
+                const tr = document.createElement('tr');
+
+                // Número da Mesa
+                const tdMesa = document.createElement('td');
+                tdMesa.textContent = mesa;
+                tr.appendChild(tdMesa);
+
+                // Produtos
+                const tdProdutos = document.createElement('td');
+                tdProdutos.textContent = produtosTexto;
+                tr.appendChild(tdProdutos);
+
+                // Status
+                const tdStatus = document.createElement('td');
+                tdStatus.textContent = status;
+                tr.appendChild(tdStatus);
+
+                // Ações
+                const tdAcoes = document.createElement('td');
+
+                // Botão para atualizar status
+                const btnStatus = document.createElement('button');
+                btnStatus.className = 'btn btn-encaminhar';
+                btnStatus.textContent = status === 'Encaminhado' ? 'Reverter para Pendente' : 'Encaminhar';
+                btnStatus.onclick = () => atualizarStatus(mesa, status === 'Encaminhado' ? 'Pendente' : 'Encaminhado');
+                tdAcoes.appendChild(btnStatus);
+
+                // Botão para encerrar comanda
+                const btnEncerrar = document.createElement('button');
+                btnEncerrar.className = 'btn btn-encerrar';
+                btnEncerrar.textContent = 'Encerrar Comanda';
+                btnEncerrar.style.marginLeft = '10px';
+                btnEncerrar.onclick = () => encerrarComanda(mesa);
+                tdAcoes.appendChild(btnEncerrar);
+
+                tr.appendChild(tdAcoes);
+
+                tabelaBody.appendChild(tr);
+            }
+        }
+
+        // Função para atualizar o status de uma mesa
+        async function atualizarStatus(mesa, novoStatus) {
+            const { data, error } = await supabaseClient
+                .from('itens_pedido')
+                .update({ status: novoStatus })
+                .eq('numero_mesa', mesa);
+
+            if (error) {
+                console.error('Erro ao atualizar status:', error);
+                alert('Erro ao atualizar status. Verifique o console para mais detalhes.');
+                return;
+            }
+
+            alert(`Status da mesa ${mesa} atualizado para "${novoStatus}".`);
+            carregarPedidos(); // Recarrega os pedidos
+        }
+
+        // Função para encerrar a comanda de uma mesa
+        async function encerrarComanda(mesa) {
+            if (!confirm(`Tem certeza que deseja encerrar a comanda da mesa ${mesa}?`)) {
+                return;
+            }
+
+            const { error } = await supabaseClient
+                .from('itens_pedido')
+                .delete()
+                .eq('numero_mesa', mesa);
+
+            if (error) {
+                console.error('Erro ao encerrar comanda:', error);
+                alert('Erro ao encerrar comanda. Verifique o console para mais detalhes.');
+                return;
+            }
+
+            alert(`Comanda da mesa ${mesa} encerrada com sucesso.`);
+            carregarPedidos(); // Recarrega os pedidos
+        }
+
+        // Carregar os pedidos ao iniciar a página
+        document.addEventListener('DOMContentLoaded', carregarPedidos);
+
+        // Atualizar os pedidos a cada 30 segundos
+        setInterval(carregarPedidos, 30000);
+    </script>
+</body>
+</html>
