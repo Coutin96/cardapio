@@ -30,7 +30,6 @@
             padding: 20px;
             max-width: 1200px;
             margin: 0 auto; /* Centraliza o catálogo na tela */
-            flex-grow: 1; /* Permite que o catálogo cresça e ocupe espaço */
         }
 
         /* Estilos para o campo de busca */
@@ -110,7 +109,6 @@
         .link-finalizar {
             text-align: center;
             margin-top: 20px;
-            padding: 20px 0; /* Adiciona espaçamento ao redor do botão */
         }
 
         .link-finalizar a {
@@ -217,13 +215,13 @@
             const produtoExistente = carrinho.find(p => p.id === id);
 
             if (produtoExistente) {
-                produtoExistente.quantidade += 1; // Incrementa a quantidade se o produto já estiver no carrinho
+                produtoExistente.quantidade += 1;
             } else {
-                carrinho.push({ id, nome, preco, foto_url, quantidade: 1 }); // Adiciona o produto ao carrinho
+                carrinho.push({ id, nome, preco, quantidade: 1, foto_url });
             }
 
-            localStorage.setItem('carrinho', JSON.stringify(carrinho)); // Atualiza o carrinho no localStorage
-            document.getElementById(`quantidade-${id}`).innerText = carrinho.find(p => p.id === id).quantidade; // Atualiza a quantidade exibida
+            localStorage.setItem('carrinho', JSON.stringify(carrinho));
+            document.getElementById(`quantidade-${id}`).textContent = carrinho.find(p => p.id === id).quantidade;
         }
 
         // Função para remover um produto do carrinho
@@ -232,15 +230,15 @@
             const produtoExistente = carrinho.find(p => p.id === id);
 
             if (produtoExistente && produtoExistente.quantidade > 0) {
-                produtoExistente.quantidade -= 1; // Decrementa a quantidade
-
-                if (produtoExistente.quantidade === 0) {
-                    carrinho = carrinho.filter(p => p.id !== id); // Remove o produto do carrinho se a quantidade for 0
-                }
+                produtoExistente.quantidade -= 1;
             }
 
-            localStorage.setItem('carrinho', JSON.stringify(carrinho)); // Atualiza o carrinho no localStorage
-            document.getElementById(`quantidade-${id}`).innerText = produtoExistente ? produtoExistente.quantidade : 0; // Atualiza a quantidade exibida
+            if (produtoExistente.quantidade === 0) {
+                carrinho = carrinho.filter(p => p.id !== id);
+            }
+
+            localStorage.setItem('carrinho', JSON.stringify(carrinho));
+            document.getElementById(`quantidade-${id}`).textContent = carrinho.find(p => p.id === id)?.quantidade || 0;
         }
     </script>
 </body>
