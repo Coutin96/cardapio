@@ -70,6 +70,29 @@
             text-align: center;
         }
 
+        /* Estilo da lista de produtos */
+        .lista-produtos {
+            margin-top: 20px;
+            max-width: 600px;
+            margin: 20px auto;
+            background: white;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .produto {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #ccc;
+        }
+
+        .produto:last-child {
+            border-bottom: none;
+        }
+
         /* Estilo do rodapé */
         footer {
             text-align: center;
@@ -131,6 +154,11 @@
         </div>
     </div>
 
+    <div class="lista-produtos" id="lista-produtos">
+        <h2>Produtos Cadastrados</h2>
+        <div id="produtos-container"></div>
+    </div>
+
     <p style="text-align: center;"><a href="catalogo.html">Ver Catálogo</a></p>
     
     <footer style="text-align: center;">
@@ -143,7 +171,10 @@
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNoY3lzaWpzaml2YWhsYWVraGx3Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcyODk3NzgwNywiZXhwIjoyMDQ0NTUzODA3fQ.vGRBGeF8y-GU2hNeuNu4XW1CSu1Pa0j747UZicUrifM';
         const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Carrega os produtos cadastrados
+            await loadProducts();
+
             // Função para mostrar a prévia do produto
             document.getElementById('foto').addEventListener('change', function(event) {
                 const file = event.target.files[0];
@@ -211,120 +242,58 @@
                     .insert([{ nome, preco, foto_url: publicURL, descricao }]);
 
                 if (error) {
-                    console.error('Erro ao adicionar produto:', error);
-                    alert('Erro ao adicionar produto. Tente novamente.');
+                    console.error('Erro ao adicionar o produto:', error);
+                    alert('Erro ao adicionar o produto. Tente novamente.');
                 } else {
                     alert('Produto adicionado com sucesso!');
-                    e.target.reset();
-                    document.getElementById('preview').style.display = 'none'; // Oculta a prévia
+                    loadProducts(); // Atualiza a lista de produtos
+                    // Limpa os campos do formulário
+                    document.getElementById('form-adicionar-produto').reset();
+                    document.getElementById('preview').style.display = 'none'; // Esconde a prévia
                 }
             });
-        }); // Fecha o DOMContentLoaded
-    </script>
-    <script>
-        // Inicializa o Supabase
-        const supabaseUrl = 'https://chcysijsjivahlaekhlw.supabase.co';
-        const supabaseKey = 'YOUR_SUPABASE_KEY';
-        const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
-    
-        document.addEventListener('DOMContentLoaded', function() {
-            // Função para mostrar a prévia do produto
-            document.getElementById('foto').addEventListener('change', function(event) {
-                const file = event.target.files[0];
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    document.getElementById('preview-foto').src = e.target.result;
-                    document.getElementById('preview').style.display = 'block'; // Mostra a prévia
-                };
-                reader.readAsDataURL(file);
+        });
+
+        // Função para carregar produtos cadastrados
+        async function loadProducts() {
+            const { data, error } = await supabaseClient
+                .from('produtos')
+                .select('*');
+
+            if (error) {
+                console.error('Erro ao carregar produtos:', error);
+                return;
+            }
+
+            const produtosContainer = document.getElementById('produtos-container');
+            produtosContainer.innerHTML = ''; // Limpa o conteúdo anterior
+
+            data.forEach(produto => {
+                const produtoDiv = document.createElement('div');
+                produtoDiv.className = 'produto';
+                produtoDiv.innerHTML = `
+                    <span>${produto.nome} - R$ ${produto.preco.toFixed(2)}</span>
+                    <button onclick="removeProduct(${produto.id})">Remover</button>
+                `;
+                produtosContainer.appendChild(produtoDiv);
             });
-    
-            // Atualiza a prévia com o nome, preço e descrição
-            document.getElementById('nome').addEventListener('input', function() {
-                document.getElementById('preview-nome').textContent = this.value;
-            });
-    
-            document.getElementById('preco').addEventListener('input', function() {
-                document.getElementById('preview-preco').textContent = `Preço: R$ ${parseFloat(this.value).toFixed(2)}`;
-            });
-    
-            document.getElementById('descricao').addEventListener('input', function() {
-                document.getElementById('preview-descricao').textContent = this.value;
-            });
-    
-            // Função para adicionar produto
-            document.getElementById('form-adicionar-produto').addEventListener('submit', async (e) => {
-                e.preventDefault(); // Impede o envio do formulário
-    
-                const nome = document.getElementById('nome').value;
-                const preco = parseFloat(document.getElementById('preco').value);
-                const foto = document.getElementById('foto').files[0];
-                const descricao = document.getElementById('descricao').value;
-    
-                if (!foto) {
-                    alert('Por favor, selecione uma imagem.');
-                    return;
-                }
-    
-                // Verifica o tamanho do arquivo (máximo 5 MB)
-                if (foto.size > 5 * 1024 * 1024) {
-                    alert('O arquivo deve ter menos de 5 MB.');
-                    return;
-                }
-    
-                // Substitui espaços no nome da imagem por underscores
-                const fotoNomeSanitizado = foto.name.replace(/\s+/g, '_');
-    
-                // Carrega a imagem no Supabase Storage com o nome sanitizado
-                const { data: storageData, error: storageError } = await supabaseClient.storage
-                    .from('produtos')
-                    .upload(`public/${Date.now()}_${fotoNomeSanitizado}`, foto);
-    
-                if (storageError) {
-                    console.error('Erro ao carregar a imagem:', storageError);
-                    alert('Erro ao carregar a imagem. Tente novamente.');
-                    return;
-                }
-    
-                // Adiciona o caminho completo da URL manualmente
-                const publicURL = `${supabaseUrl}/storage/v1/object/public/produtos/${storageData.path}`;
-    
-                // Adiciona o produto ao banco de dados
-                const { data, error } = await supabaseClient
-                    .from('produtos')
-                    .insert([{ nome, preco, foto_url: publicURL, descricao }]);
-    
-                if (error) {
-                    console.error('Erro ao adicionar produto:', error);
-                    alert('Erro ao adicionar produto. Tente novamente.');
-                } else {
-                    alert('Produto adicionado com sucesso!');
-                    e.target.reset();
-                    document.getElementById('preview').style.display = 'none'; // Oculta a prévia
-                }
-            });
-    
-            // Função para remover produto
-            document.getElementById('form-remover-produto').addEventListener('submit', async (e) => {
-                e.preventDefault(); // Impede o envio do formulário
-    
-                const nomeRemover = document.getElementById('nome-remover').value;
-    
-                // Remove o produto do banco de dados
-                const { data, error } = await supabaseClient
-                    .from('produtos')
-                    .delete()
-                    .match({ nome: nomeRemover });
-    
-                if (error) {
-                    console.error('Erro ao remover produto:', error);
-                    alert('Erro ao remover produto. Tente novamente.');
-                } else {
-                    alert('Produto removido com sucesso!');
-                    e.target.reset(); // Reseta o formulário
-                }
-            });
-        }); // Fecha o DOMContentLoaded
+        }
+
+        // Função para remover produto
+        async function removeProduct(id) {
+            const { error } = await supabaseClient
+                .from('produtos')
+                .delete()
+                .eq('id', id);
+
+            if (error) {
+                console.error('Erro ao remover produto:', error);
+                alert('Erro ao remover produto. Tente novamente.');
+            } else {
+                alert('Produto removido com sucesso!');
+                loadProducts(); // Atualiza a lista de produtos
+            }
+        }
     </script>
 </body>
 </html>
