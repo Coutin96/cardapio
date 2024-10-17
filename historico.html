@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Histórico de Pedidos</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/umd/supabase.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+
+        h1 {
+            text-align: center;
+            color: #343a40;
+        }
+
+        .historico-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .historico-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .historico-table th, .historico-table td {
+            padding: 10px;
+            border: 1px solid #ccc;
+            text-align: left;
+        }
+
+        .historico-table th {
+            background-color: #343a40;
+            color: white;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Histórico de Pedidos</h1>
+    <div class="historico-container">
+        <h2>Histórico de Pedidos</h2>
+        <table class="historico-table">
+            <thead>
+                <tr>
+                    <th>Produto</th>
+                    <th>Quantidade</th>
+                    <th>Valor Unitário</th>
+                    <th>Valor Total</th>
+                </tr>
+            </thead>
+            <tbody id="historico-pedidos">
+                <!-- Histórico será inserido aqui -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        // Inicializa o Supabase
+        const supabaseUrl = 'https://chcysijsjivahlaekhlw.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNoY3lzaWpzaml2YWhsYWVraGx3Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcyODk3NzgwNywiZXhwIjoyMDQ0NTUzODA3fQ.vGRBGeF8y-GU2hNeuNu4XW1CSu1Pa0j747UZicUrifM';
+        const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+
+        // Função para carregar o histórico de pedidos da mesa
+        async function carregarHistoricoPedidos(mesa) {
+            const { data, error } = await supabaseClient
+                .from('itens_pedido')
+                .select('*')
+                .eq('numero_mesa', mesa);
+
+            if (error) {
+                alert('Erro ao carregar histórico: ' + error.message);
+                return;
+            }
+
+            const historicoContainer = document.getElementById('historico-pedidos');
+            historicoContainer.innerHTML = '';
+
+            data.forEach(pedido => {
+                const valorTotal = pedido.quantidade * pedido.valor_unitario;
+                const row = `
+                    <tr>
+                        <td>${pedido.nome}</td>
+                        <td>${pedido.quantidade}</td>
+                        <td>R$ ${pedido.valor_unitario.toFixed(2)}</td>
+                        <td>R$ ${valorTotal.toFixed(2)}</td>
+                    </tr>
+                `;
+                historicoContainer.innerHTML += row;
+            });
+        }
+
+        // Carregar histórico da mesa 1 por padrão (pode ser alterado)
+        carregarHistoricoPedidos(1);  // Altere para a mesa desejada
+    </script>
+
+    <footer>
+        <p>&copy; 2024 Renan Paim Couto. Todos os direitos reservados.</p>
+    </footer>
+</body>
+</html>
