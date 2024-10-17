@@ -221,5 +221,110 @@
             });
         }); // Fecha o DOMContentLoaded
     </script>
+    <script>
+        // Inicializa o Supabase
+        const supabaseUrl = 'https://chcysijsjivahlaekhlw.supabase.co';
+        const supabaseKey = 'YOUR_SUPABASE_KEY';
+        const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+    
+        document.addEventListener('DOMContentLoaded', function() {
+            // Função para mostrar a prévia do produto
+            document.getElementById('foto').addEventListener('change', function(event) {
+                const file = event.target.files[0];
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('preview-foto').src = e.target.result;
+                    document.getElementById('preview').style.display = 'block'; // Mostra a prévia
+                };
+                reader.readAsDataURL(file);
+            });
+    
+            // Atualiza a prévia com o nome, preço e descrição
+            document.getElementById('nome').addEventListener('input', function() {
+                document.getElementById('preview-nome').textContent = this.value;
+            });
+    
+            document.getElementById('preco').addEventListener('input', function() {
+                document.getElementById('preview-preco').textContent = `Preço: R$ ${parseFloat(this.value).toFixed(2)}`;
+            });
+    
+            document.getElementById('descricao').addEventListener('input', function() {
+                document.getElementById('preview-descricao').textContent = this.value;
+            });
+    
+            // Função para adicionar produto
+            document.getElementById('form-adicionar-produto').addEventListener('submit', async (e) => {
+                e.preventDefault(); // Impede o envio do formulário
+    
+                const nome = document.getElementById('nome').value;
+                const preco = parseFloat(document.getElementById('preco').value);
+                const foto = document.getElementById('foto').files[0];
+                const descricao = document.getElementById('descricao').value;
+    
+                if (!foto) {
+                    alert('Por favor, selecione uma imagem.');
+                    return;
+                }
+    
+                // Verifica o tamanho do arquivo (máximo 5 MB)
+                if (foto.size > 5 * 1024 * 1024) {
+                    alert('O arquivo deve ter menos de 5 MB.');
+                    return;
+                }
+    
+                // Substitui espaços no nome da imagem por underscores
+                const fotoNomeSanitizado = foto.name.replace(/\s+/g, '_');
+    
+                // Carrega a imagem no Supabase Storage com o nome sanitizado
+                const { data: storageData, error: storageError } = await supabaseClient.storage
+                    .from('produtos')
+                    .upload(`public/${Date.now()}_${fotoNomeSanitizado}`, foto);
+    
+                if (storageError) {
+                    console.error('Erro ao carregar a imagem:', storageError);
+                    alert('Erro ao carregar a imagem. Tente novamente.');
+                    return;
+                }
+    
+                // Adiciona o caminho completo da URL manualmente
+                const publicURL = `${supabaseUrl}/storage/v1/object/public/produtos/${storageData.path}`;
+    
+                // Adiciona o produto ao banco de dados
+                const { data, error } = await supabaseClient
+                    .from('produtos')
+                    .insert([{ nome, preco, foto_url: publicURL, descricao }]);
+    
+                if (error) {
+                    console.error('Erro ao adicionar produto:', error);
+                    alert('Erro ao adicionar produto. Tente novamente.');
+                } else {
+                    alert('Produto adicionado com sucesso!');
+                    e.target.reset();
+                    document.getElementById('preview').style.display = 'none'; // Oculta a prévia
+                }
+            });
+    
+            // Função para remover produto
+            document.getElementById('form-remover-produto').addEventListener('submit', async (e) => {
+                e.preventDefault(); // Impede o envio do formulário
+    
+                const nomeRemover = document.getElementById('nome-remover').value;
+    
+                // Remove o produto do banco de dados
+                const { data, error } = await supabaseClient
+                    .from('produtos')
+                    .delete()
+                    .match({ nome: nomeRemover });
+    
+                if (error) {
+                    console.error('Erro ao remover produto:', error);
+                    alert('Erro ao remover produto. Tente novamente.');
+                } else {
+                    alert('Produto removido com sucesso!');
+                    e.target.reset(); // Reseta o formulário
+                }
+            });
+        }); // Fecha o DOMContentLoaded
+    </script>
 </body>
 </html>
