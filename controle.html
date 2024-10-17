@@ -93,6 +93,15 @@
 <body>
     <h1>Controle de Pedidos</h1>
 
+    <div>
+        <label for="filtro-status">Filtrar por Status:</label>
+        <select id="filtro-status">
+            <option value="todos">Todos</option>
+            <option value="Pendente">Pendentes</option>
+            <option value="Encaminhado">Encaminhados</option>
+        </select>
+    </div>
+
     <div id="loading">Carregando dados...</div>
 
     <table class="tabela-controle">
@@ -121,11 +130,16 @@
         const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
         // Função para carregar os pedidos
-        async function carregarPedidos() {
+        async function carregarPedidos(filtro) {
             document.getElementById('loading').style.display = 'block';
-            const { data, error } = await supabaseClient
-                .from('itens_pedido')
-                .select('*');
+
+            let query = supabaseClient.from('itens_pedido').select('*');
+
+            if (filtro && filtro !== 'todos') {
+                query = query.eq('status', filtro);
+            }
+
+            const { data, error } = await query;
 
             document.getElementById('loading').style.display = 'none';
 
@@ -193,14 +207,23 @@
             }
 
             alert(`Status do pedido atualizado para "${novoStatus}".`);
-            carregarPedidos(); // Recarrega os pedidos
+            carregarPedidos(document.getElementById('filtro-status').value); // Recarrega os pedidos
         }
 
         // Carregar os pedidos ao iniciar a página
-        document.addEventListener('DOMContentLoaded', carregarPedidos);
+        document.addEventListener('DOMContentLoaded', () => {
+            carregarPedidos('todos'); // Carrega todos os pedidos
+
+            // Evento para alterar o filtro
+            document.getElementById('filtro-status').addEventListener('change', (event) => {
+                carregarPedidos(event.target.value);
+            });
+        });
 
         // Atualizar os pedidos a cada 30 segundos
-        setInterval(carregarPedidos, 30000);
+        setInterval(() => {
+            carregarPedidos(document.getElementById('filtro-status').value);
+        }, 30000);
     </script>
 </body>
 </html>
