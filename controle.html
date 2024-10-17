@@ -180,6 +180,18 @@
                 btnStatus.textContent = pedido.status === 'Encaminhado' ? 'Reverter para Pendente' : 'Encaminhar';
                 btnStatus.onclick = () => atualizarStatus(pedido.id, pedido.status === 'Encaminhado' ? 'Pendente' : 'Encaminhado');
                 tdAcoes.appendChild(btnStatus);
+
+                // Botão para encerrar comanda
+                const btnEncerrar = document.createElement('button');
+                btnEncerrar.className = 'btn btn-encerrar';
+                btnEncerrar.textContent = 'Encerrar Comanda';
+                btnEncerrar.style.marginLeft = '10px';
+                btnEncerrar.onclick = () => encerrarComanda(pedido.id);
+                tdAcoes.appendChild(btnEncerrar);
+
+                tr.appendChild(tdAcoes);
+
+                tabelaBody.appendChild(tr);
             });
         }
 
