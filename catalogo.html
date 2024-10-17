@@ -10,27 +10,26 @@
         body {
             font-family: Arial, sans-serif;
             padding: 20px;
-            margin: 0; /* Remove margens do corpo */
-            min-height: 100vh; /* Garante que o corpo ocupe a altura total da tela */
+            margin: 0;
+            min-height: 100vh;
             display: flex;
-            flex-direction: column; /* Organiza os elementos em coluna */
-            justify-content: space-between; /* Espaça os elementos entre si */
+            flex-direction: column;
+            justify-content: space-between;
         }
 
         h1, h2 {
-            text-align: center; /* Centraliza os títulos */
+            text-align: center;
         }
 
-        /* Estilos para o campo de busca */
         .busca {
             text-align: center;
             margin-bottom: 20px;
-            position: sticky; /* Fixa o campo de busca no topo */
-            top: 0; /* Posiciona no topo */
-            background: white; /* Fundo branco para o campo de busca */
-            z-index: 100; /* Garante que fique acima dos outros elementos */
-            padding: 10px; /* Adiciona padding ao campo de busca */
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Sombra para o campo de busca */
+            position: sticky;
+            top: 0;
+            background: white;
+            z-index: 100;
+            padding: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
 
         .busca input {
@@ -40,16 +39,15 @@
             font-size: 16px;
         }
 
-        /* Estilos para o catálogo */
         .catalogo {
             display: flex;
             flex-wrap: wrap;
-            justify-content: center; /* Centraliza os itens */
+            justify-content: center;
             gap: 20px;
             padding: 20px;
             max-width: 1200px;
-            margin: 0 auto; /* Centraliza o catálogo na tela */
-            flex-grow: 1; /* Faz o catálogo ocupar o espaço restante */
+            margin: 0 auto;
+            flex-grow: 1;
         }
 
         .produto {
@@ -57,66 +55,65 @@
             padding: 10px;
             text-align: center;
             width: 100%;
-            max-width: 200px; /* Tamanho máximo dos produtos */
+            max-width: 200px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            display: flex; /* Flexbox para alinhar itens */
-            flex-direction: column; /* Coloca os itens em coluna */
-            align-items: center; /* Centraliza os itens */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
         .produto img {
-            width: 150px; /* Largura fixa para sincronizar tamanho */
-            height: 150px; /* Altura fixa para sincronizar tamanho */
-            object-fit: cover; /* Corta a imagem para se ajustar ao tamanho */
-            margin-bottom: 10px; /* Espaçamento entre a imagem e o conteúdo */
+            width: 150px;
+            height: 150px;
+            object-fit: cover;
+            margin-bottom: 10px;
         }
 
         .informacoes {
             display: flex;
-            flex-direction: column; /* Coloca as informações em coluna */
-            align-items: center; /* Centraliza as informações */
+            flex-direction: column;
+            align-items: center;
         }
 
         .informacoes button {
-            margin: 5px; /* Espaçamento entre os botões */
-            padding: 5px 10px; /* Padding para os botões */
-            border: none; /* Remove bordas */
-            background-color: #007bff; /* Cor de fundo */
-            color: white; /* Cor do texto */
-            border-radius: 5px; /* Bordas arredondadas */
-            cursor: pointer; /* Cursor de mão ao passar por cima */
+            margin: 5px;
+            padding: 5px 10px;
+            border: none;
+            background-color: #007bff;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
         }
 
         .informacoes button:hover {
-            background-color: #0056b3; /* Cor ao passar o mouse */
+            background-color: #0056b3;
         }
 
         .quantidade {
             display: flex;
-            align-items: center; /* Centraliza verticalmente */
-            margin: 5px 0; /* Espaçamento vertical */
+            align-items: center;
+            margin: 5px 0;
         }
 
         .quantidade button {
-            width: 30px; /* Largura dos botões de quantidade */
+            width: 30px;
         }
 
         @media (min-width: 600px) {
             .produto {
-                width: 48%; /* Produtos ocupam 48% do espaço da tela em dispositivos maiores */
+                width: 48%;
             }
         }
 
         @media (min-width: 900px) {
             .produto {
-                width: 30%; /* Produtos ocupam 30% do espaço da tela em telas ainda maiores */
+                width: 30%;
             }
         }
 
-        /* Link para finalizar pedido */
         .link-finalizar {
             text-align: center;
-            margin: 20px 0; /* Margem em cima e embaixo */
+            margin: 20px 0;
         }
 
         .link-finalizar a {
@@ -125,17 +122,16 @@
             background-color: #007bff;
             color: white;
             border-radius: 5px;
-            position: fixed; /* Fixa o botão na parte inferior */
-            bottom: 20px; /* Distância do fundo da tela */
-            left: 50%; /* Centraliza horizontalmente */
-            transform: translateX(-50%); /* Compensa a largura do botão para centralizar */
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
         }
 
         .link-finalizar a:hover {
             background-color: #0056b3;
         }
 
-        /* Estilo de carregamento */
         #loading {
             display: none;
             text-align: center;
@@ -146,7 +142,6 @@
 <body>
     <h1>Catálogo de Produtos</h1>
 
-    <!-- Campo de busca -->
     <div class="busca">
         <input type="text" id="campoBusca" placeholder="Digite o nome do produto..." onkeyup="filtrarProdutos()">
     </div>
@@ -171,7 +166,7 @@
 
             // Busca os produtos cadastrados no Supabase
             const { data: produtos, error } = await supabaseClient
-                .from('produtos') // Referência à tabela 'produtos'
+                .from('produtos')
                 .select('*');
 
             document.getElementById('loading').style.display = 'none'; // Oculta indicador de carregamento
@@ -186,7 +181,6 @@
             mostrarProdutos(produtos); // Mostra todos os produtos no início
         });
 
-        // Função para exibir os produtos no catálogo
         function mostrarProdutos(produtos) {
             const catalogo = document.getElementById('catalogo');
             catalogo.innerHTML = ''; // Limpa o catálogo antes de exibir
@@ -214,37 +208,64 @@
             });
         }
 
-        // Função para filtrar produtos com base na busca
         function filtrarProdutos() {
-            const busca = document.getElementById('campoBusca').value.toLowerCase(); // Obtém valor da busca
-            const produtosFiltrados = todosProdutos.filter(produto => produto.nome.toLowerCase().includes(busca)); // Filtra produtos
-
-            mostrarProdutos(produtosFiltrados); // Exibe produtos filtrados
+            const busca = document.getElementById('campoBusca').value.toLowerCase();
+            const produtosFiltrados = todosProdutos.filter(produto => produto.nome.toLowerCase().includes(busca));
+            mostrarProdutos(produtosFiltrados);
         }
 
-        // Função para adicionar ao carrinho
         function adicionarAoCarrinho(id, nome, preco, foto_url) {
             const quantidadeSpan = document.getElementById(`quantidade-${id}`);
-            let quantidade = parseInt(quantidadeSpan.textContent) || 0; // Obtém a quantidade atual
+            let quantidade = parseInt(quantidadeSpan.textContent) || 0;
 
-            quantidade++; // Aumenta a quantidade
-            quantidadeSpan.textContent = quantidade; // Atualiza a exibição da quantidade
+            quantidade++;
+            quantidadeSpan.textContent = quantidade;
 
-            // Aqui você pode adicionar a lógica para armazenar no carrinho ou no banco de dados
+            // Armazena os produtos no localStorage
+            const carrinho = JSON.parse(localStorage.getItem('carrinho')) || {};
+            carrinho[id] = { nome, preco, quantidade };
+            localStorage.setItem('carrinho', JSON.stringify(carrinho));
+
             console.log(`Adicionado ao carrinho: ${nome} - Quantidade: ${quantidade}`);
         }
 
-        // Função para remover do carrinho
         function removerDoCarrinho(id) {
             const quantidadeSpan = document.getElementById(`quantidade-${id}`);
-            let quantidade = parseInt(quantidadeSpan.textContent) || 0; // Obtém a quantidade atual
+            let quantidade = parseInt(quantidadeSpan.textContent) || 0;
 
             if (quantidade > 0) {
-                quantidade--; // Diminui a quantidade
-                quantidadeSpan.textContent = quantidade; // Atualiza a exibição da quantidade
+                quantidade--;
+                quantidadeSpan.textContent = quantidade;
+
+                // Atualiza o localStorage
+                const carrinho = JSON.parse(localStorage.getItem('carrinho')) || {};
+                if (carrinho[id]) {
+                    if (quantidade === 0) {
+                        delete carrinho[id]; // Remove o item se a quantidade for 0
+                    } else {
+                        carrinho[id].quantidade = quantidade; // Atualiza a quantidade
+                    }
+                    localStorage.setItem('carrinho', JSON.stringify(carrinho));
+                }
+
                 console.log(`Removido do carrinho: Produto ID ${id} - Nova quantidade: ${quantidade}`);
             }
         }
+
+        // Função para carregar o carrinho ao iniciar a página
+        function carregarCarrinho() {
+            const carrinho = JSON.parse(localStorage.getItem('carrinho')) || {};
+
+            for (const id in carrinho) {
+                const { quantidade } = carrinho[id];
+                document.getElementById(`quantidade-${id}`).textContent = quantidade; // Atualiza a quantidade na interface
+            }
+        }
+
+        // Chama a função ao carregar a página
+        document.addEventListener('DOMContentLoaded', () => {
+            carregarCarrinho(); // Carrega o carrinho ao iniciar a página
+        });
     </script>
 </body>
 </html>

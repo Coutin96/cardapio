@@ -189,7 +189,7 @@
     <script>
         // Inicializa o Supabase
         const supabaseUrl = 'https://chcysijsjivahlaekhlw.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNoY3lzaWpzaml2YWhsYWVraGx3Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcyODk3NzgwNywiZXhwIjoyMDQ0NTUzODA3fQ.vGRBGeF8y-GU2hNeuNu4XW1CSu1Pa0j747UZicUrifM'; // Substitua pela sua chave do Supabase
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNoY3lzaWpzaml2YWhsYWVraGx3Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcyODk3NzgwNywiZXhwIjoyMDQ0NTUzODA3fQ.vGRBGeF8y-GU2hNeuNu4XW1CSu1Pa0j747UZicUrifM';
         const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
         let carrinho = JSON.parse(localStorage.getItem('carrinho')) || [];
@@ -244,7 +244,7 @@
                     id: id,
                     nome: "Produto " + id,
                     preco: 10.0,
-                    foto_url: "https://via.placeholder.com/50", // Imagem padrão para produtos
+                    foto_url: "https://via.placeholder.com/50",
                     quantidade: 1
                 };
                 carrinho.push(novoProduto);
@@ -296,43 +296,58 @@
 
             if (error) {
                 alert('Erro ao finalizar o pedido: ' + error.message);
+            } else {
+                alert('Pedido finalizado com sucesso!');
+                limparCarrinho();
+            }
+        });
+
+        // Função para carregar o histórico de pedidos da mesa
+        async function carregarHistoricoPedidos(mesa) {
+            const { data, error } = await supabaseClient
+                .from('itens_pedido')
+                .select('*')
+                .eq('numero_mesa', mesa);
+
+            if (error) {
+                alert('Erro ao carregar histórico: ' + error.message);
                 return;
             }
 
-            alert('Pedido finalizado com sucesso!');
-            limparCarrinho();
-            carregarHistorico(); // Carregar o histórico após finalizar o pedido
-        });
-
-        function carregarHistorico() {
             const historicoContainer = document.getElementById('historico-pedidos');
-            historicoContainer.innerHTML = ''; // Limpa o histórico atual
+            historicoContainer.innerHTML = '';
 
-            supabaseClient
-                .from('itens_pedido')
-                .select('*')
-                .then(({ data, error }) => {
-                    if (error) {
-                        console.error('Erro ao carregar histórico:', error);
-                        return;
-                    }
-
-                    data.forEach(item => {
-                        const row = document.createElement('tr');
-                        row.innerHTML = `
-                            <td>${item.nome}</td>
-                            <td>${item.quantidade}</td>
-                            <td>R$ ${item.valor_unitario.toFixed(2)}</td>
-                            <td>R$ ${(item.valor_unitario * item.quantidade).toFixed(2)}</td>
-                        `;
-                        historicoContainer.appendChild(row);
-                    });
-                });
+            data.forEach(pedido => {
+                const valorTotal = pedido.quantidade * pedido.valor_unitario;
+                const row = `
+                    <tr>
+                        <td>${pedido.nome}</td>
+                        <td>${pedido.quantidade}</td>
+                        <td>R$ ${pedido.valor_unitario.toFixed(2)}</td>
+                        <td>R$ ${valorTotal.toFixed(2)}</td>
+                    </tr>
+                `;
+                historicoContainer.innerHTML += row;
+            });
         }
 
-        // Carrega o carrinho e histórico ao iniciar a página
+        // Atualiza o histórico automaticamente quando a mesa é alterada
+        document.getElementById('mesa').addEventListener('change', (event) => {
+            const mesa = event.target.value;
+            if (mesa) {
+                carregarHistoricoPedidos(mesa);
+            }
+        });
+
         renderCarrinho();
-        carregarHistorico();
     </script>
+
+    <p></p>
+
+     <div style="text-align: center;"><a href="catalogo.html"><b>Voltar para o catálogo</b></a></div>
+
+     <footer style="text-align: center;">
+        <p>&copy; <b>2024 Renan Paim Couto. Todos os direitos reservados.</b></p>
+     </footer>
 </body>
 </html>
