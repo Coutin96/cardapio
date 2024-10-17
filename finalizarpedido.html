@@ -156,28 +156,35 @@
     <div class="carrinho" id="carrinho"></div>
 
     <div class="mesa-container">
-        <label for="numeroMesa">Número da Mesa:</label>
-        <input type="number" id="numeroMesa" min="1" max="100" required>
-    </div>
-
-    <div class="total" id="total"></div>
-
-    <div class="btn-finalizar">
-        <button onclick="finalizarPedido()">Finalizar Pedido</button>
+        <label for="mesa">Informe a mesa:</label>
+        <input type="number" id="mesa" min="1" max="100" placeholder="Número da mesa" required>
     </div>
 
     <div class="btn-limpar">
-        <button onclick="limparCarrinho()">Limpar Pedido</button>
+        <button id="limpar-pedido">Limpar Pedido</button>
     </div>
 
-    <h2>Histórico de Pedidos</h2>
+    <div class="btn-finalizar">
+        <button id="finalizar-pedido">Finalizar Pedido</button>
+    </div>
+
+    <!-- Seção do histórico de pedidos -->
     <div class="historico-container">
-        <table class="historico-table" id="historico"></table>
+        <h2>Histórico de Pedidos</h2>
+        <table class="historico-table">
+            <thead>
+                <tr>
+                    <th>Produto</th>
+                    <th>Quantidade</th>
+                    <th>Valor Unitário</th>
+                    <th>Valor Total</th>
+                </tr>
+            </thead>
+            <tbody id="historico-pedidos">
+                <!-- Histórico será inserido aqui -->
+            </tbody>
+        </table>
     </div>
-
-    <footer>
-        <p>&copy; <b>2024 Renan Paim Couto. Todos os direitos reservados.</b></p>
-    </footer>
 
     <script>
         // Inicializa o Supabase
@@ -185,122 +192,162 @@
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNoY3lzaWpzaml2YWhsYWVraGx3Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcyODk3NzgwNywiZXhwIjoyMDQ0NTUzODA3fQ.vGRBGeF8y-GU2hNeuNu4XW1CSu1Pa0j747UZicUrifM';
         const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
-        function atualizarCarrinho() {
-            const carrinho = JSON.parse(localStorage.getItem('carrinho')) || [];
+        let carrinho = JSON.parse(localStorage.getItem('carrinho')) || [];
+
+        function renderCarrinho() {
             const carrinhoContainer = document.getElementById('carrinho');
             carrinhoContainer.innerHTML = '';
-
             let total = 0;
 
-            carrinho.forEach(item => {
-                const produto = buscarProduto(item.id);
-                total += produto.preco * item.quantidade;
-
+            carrinho.forEach(produto => {
+                total += produto.preco * produto.quantidade;
                 const divProduto = document.createElement('div');
                 divProduto.classList.add('produto-carrinho');
+
                 divProduto.innerHTML = `
                     <div class="produto-info">
-                        <img src="${produto.foto_url}" alt="${produto.nome}">
-                        <div class="produto-nome">${produto.nome}</div>
+                        <img src="${produto.foto_url}" alt="Imagem do Produto">
+                        <span class="produto-nome">${produto.nome} (Quantidade: ${produto.quantidade})</span>
                     </div>
                     <div class="preco-container">
-                        <div>R$ ${(produto.preco * item.quantidade).toFixed(2)}</div>
-                        <button onclick="removerDoCarrinho(${item.id})">Remover</button>
+                        <span>R$ ${(produto.preco * produto.quantidade).toFixed(2)}</span>
+                        <div>
+                            <button onclick="adicionarAoCarrinho(${produto.id})">+</button>
+                            <button onclick="removerDoCarrinho(${produto.id})">-</button>
+                        </div>
                     </div>
                 `;
+
                 carrinhoContainer.appendChild(divProduto);
             });
 
-            document.getElementById('total').innerText = `Total: R$ ${total.toFixed(2)}`;
+            const divTotal = document.createElement('div');
+            divTotal.className = 'produto-carrinho';
+            divTotal.innerHTML = `
+                <div class="produto-info">
+                    <strong>Total do Carrinho:</strong>
+                </div>
+                <div class="preco-container">
+                    <span>R$ ${total.toFixed(2)}</span>
+                </div>
+            `;
+            carrinhoContainer.appendChild(divTotal);
         }
 
-        function buscarProduto(id) {
-            const produtos = JSON.parse(localStorage.getItem('produtos')) || [];
-            return produtos.find(produto => produto.id === id);
-        }
+        function adicionarAoCarrinho(id) {
+            const produtoExistente = carrinho.find(produto => produto.id === id);
 
-        function finalizarPedido() {
-            const numeroMesa = document.getElementById('numeroMesa').value;
-            const carrinho = JSON.parse(localStorage.getItem('carrinho')) || [];
-
-            if (carrinho.length === 0 || !numeroMesa) {
-                alert('Por favor, adicione produtos ao carrinho e informe o número da mesa.');
-                return;
+            if (produtoExistente) {
+                produtoExistente.quantidade += 1;
+            } else {
+                const novoProduto = {
+                    id: id,
+                    nome: "Produto " + id,
+                    preco: 10.0,
+                    foto_url: "https://via.placeholder.com/50",
+                    quantidade: 1
+                };
+                carrinho.push(novoProduto);
             }
 
-            // Salva os itens do pedido na tabela itens_pedido
-            carrinho.forEach(async item => {
-                const produto = buscarProduto(item.id);
-                await supabaseClient
-                    .from('itens_pedido')
-                    .insert([
-                        {
-                            produto_id: item.id,
-                            nome: produto.nome,
-                            numero_mesa: numeroMesa,
-                            quantidade: item.quantidade,
-                            valor_unitario: produto.preco
-                        }
-                    ]);
-            });
-
-            alert('Pedido finalizado com sucesso!');
-            localStorage.removeItem('carrinho');
-            atualizarCarrinho();
+            localStorage.setItem('carrinho', JSON.stringify(carrinho));
+            renderCarrinho();
         }
 
         function removerDoCarrinho(id) {
-            let carrinho = JSON.parse(localStorage.getItem('carrinho')) || [];
-            carrinho = carrinho.filter(item => item.id !== id);
+            const produtoIndex = carrinho.findIndex(produto => produto.id === id);
+
+            if (produtoIndex > -1) {
+                carrinho[produtoIndex].quantidade -= 1;
+
+                if (carrinho[produtoIndex].quantidade <= 0) {
+                    carrinho.splice(produtoIndex, 1);
+                }
+            }
+
             localStorage.setItem('carrinho', JSON.stringify(carrinho));
-            atualizarCarrinho();
+            renderCarrinho();
         }
 
         function limparCarrinho() {
             localStorage.removeItem('carrinho');
-            atualizarCarrinho();
+            carrinho = [];
+            renderCarrinho();
         }
 
-        function carregarHistorico() {
-            // Carregar histórico de pedidos
-            supabaseClient
+        document.getElementById('limpar-pedido').addEventListener('click', limparCarrinho);
+
+        document.getElementById('finalizar-pedido').addEventListener('click', async () => {
+            const mesa = document.getElementById('mesa').value;
+            if (!mesa) {
+                alert('Informe o número da mesa!');
+                return;
+            }
+
+            const { error } = await supabaseClient
+                .from('itens_pedido')
+                .insert(carrinho.map(produto => ({
+                    produto_id: produto.id,
+                    nome: produto.nome,
+                    numero_mesa: mesa,
+                    quantidade: produto.quantidade,
+                    valor_unitario: produto.preco
+                })));
+
+            if (error) {
+                alert('Erro ao finalizar o pedido: ' + error.message);
+            } else {
+                alert('Pedido finalizado com sucesso!');
+                limparCarrinho();
+            }
+        });
+
+        // Função para carregar o histórico de pedidos da mesa
+        async function carregarHistoricoPedidos(mesa) {
+            const { data, error } = await supabaseClient
                 .from('itens_pedido')
                 .select('*')
-                .then(({ data, error }) => {
-                    if (error) {
-                        console.error('Erro ao carregar histórico:', error);
-                        return;
-                    }
+                .eq('numero_mesa', mesa);
 
-                    const historicoTable = document.getElementById('historico');
-                    historicoTable.innerHTML = `
-                        <tr>
-                            <th>ID</th>
-                            <th>Produto</th>
-                            <th>Número da Mesa</th>
-                            <th>Quantidade</th>
-                            <th>Valor Unitário</th>
-                        </tr>
-                    `;
+            if (error) {
+                alert('Erro ao carregar histórico: ' + error.message);
+                return;
+            }
 
-                    data.forEach(item => {
-                        const row = document.createElement('tr');
-                        row.innerHTML = `
-                            <td>${item.id}</td>
-                            <td>${item.nome}</td>
-                            <td>${item.numero_mesa}</td>
-                            <td>${item.quantidade}</td>
-                            <td>R$ ${item.valor_unitario.toFixed(2)}</td>
-                        `;
-                        historicoTable.appendChild(row);
-                    });
-                });
+            const historicoContainer = document.getElementById('historico-pedidos');
+            historicoContainer.innerHTML = '';
+
+            data.forEach(pedido => {
+                const valorTotal = pedido.quantidade * pedido.valor_unitario;
+                const row = `
+                    <tr>
+                        <td>${pedido.nome}</td>
+                        <td>${pedido.quantidade}</td>
+                        <td>R$ ${pedido.valor_unitario.toFixed(2)}</td>
+                        <td>R$ ${valorTotal.toFixed(2)}</td>
+                    </tr>
+                `;
+                historicoContainer.innerHTML += row;
+            });
         }
 
-        window.onload = () => {
-            atualizarCarrinho();
-            carregarHistorico();
-        };
+        // Atualiza o histórico automaticamente quando a mesa é alterada
+        document.getElementById('mesa').addEventListener('change', (event) => {
+            const mesa = event.target.value;
+            if (mesa) {
+                carregarHistoricoPedidos(mesa);
+            }
+        });
+
+        renderCarrinho();
     </script>
+
+    <p></p>
+
+     <div style="text-align: center;"><a href="catalogo.html"><b>Voltar para o catálogo</b></a></div>
+
+     <footer style="text-align: center;">
+        <p>&copy; <b>2024 Renan Paim Couto. Todos os direitos reservados.</b></p>
+     </footer>
 </body>
 </html>

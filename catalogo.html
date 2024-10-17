@@ -153,6 +153,8 @@
         <a href="finalizarpedido.html">Finalizar Pedido</a>
     </div>
 
+    <input type="hidden" id="numeroMesa" value="1"> <!-- Campo oculto para o número da mesa -->
+
     <script>
         // Inicializa o Supabase
         const supabaseUrl = 'https://chcysijsjivahlaekhlw.supabase.co';
@@ -223,7 +225,7 @@
 
             // Armazena os produtos no localStorage
             const carrinho = JSON.parse(localStorage.getItem('carrinho')) || {};
-            carrinho[id] = { nome, preco, quantidade };
+            carrinho[id] = { nome, preco, quantidade, numeroMesa: document.getElementById('numeroMesa').value }; // Inclui o número da mesa
             localStorage.setItem('carrinho', JSON.stringify(carrinho));
 
             console.log(`Adicionado ao carrinho: ${nome} - Quantidade: ${quantidade}`);
@@ -248,24 +250,9 @@
                     localStorage.setItem('carrinho', JSON.stringify(carrinho));
                 }
 
-                console.log(`Removido do carrinho: Produto ID ${id} - Nova quantidade: ${quantidade}`);
+                console.log(`Removido do carrinho: ${id} - Quantidade: ${quantidade}`);
             }
         }
-
-        // Função para carregar o carrinho ao iniciar a página
-        function carregarCarrinho() {
-            const carrinho = JSON.parse(localStorage.getItem('carrinho')) || {};
-
-            for (const id in carrinho) {
-                const { quantidade } = carrinho[id];
-                document.getElementById(`quantidade-${id}`).textContent = quantidade; // Atualiza a quantidade na interface
-            }
-        }
-
-        // Chama a função ao carregar a página
-        document.addEventListener('DOMContentLoaded', () => {
-            carregarCarrinho(); // Carrega o carrinho ao iniciar a página
-        });
     </script>
 </body>
 </html>
