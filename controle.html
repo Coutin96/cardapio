@@ -107,7 +107,8 @@
         <thead>
             <tr>
                 <th>Número da Mesa</th>
-                <th>Produtos</th>
+                <th>Produto</th>
+                <th>Quantidade</th>
                 <th>Status</th>
                 <th>Ações</th>
             </tr>
@@ -142,45 +143,32 @@
                 return;
             }
 
-            // Agrupar pedidos por mesa
-            const pedidosPorMesa = {};
-            data.forEach(pedido => {
-                if (!pedidosPorMesa[pedido.numero_mesa]) {
-                    pedidosPorMesa[pedido.numero_mesa] = {
-                        produtos: [],
-                        status: pedido.status || 'Pendente' // Assume 'Pendente' se não houver status
-                    };
-                }
-                pedidosPorMesa[pedido.numero_mesa].produtos.push(pedido);
-            });
-
             // Preencher a tabela
             const tabelaBody = document.getElementById('tabela-body');
             tabelaBody.innerHTML = ''; // Limpa a tabela
 
-            for (const mesa in pedidosPorMesa) {
-                const produtos = pedidosPorMesa[mesa].produtos;
-                const status = pedidosPorMesa[mesa].status;
-
-                // Concatenar nomes dos produtos e quantidades
-                const produtosTexto = produtos.map(p => `${p.nome} (x${p.quantidade})`).join(', ');
-
+            data.forEach(pedido => {
                 // Criar linha da tabela
                 const tr = document.createElement('tr');
 
                 // Número da Mesa
                 const tdMesa = document.createElement('td');
-                tdMesa.textContent = mesa;
+                tdMesa.textContent = pedido.numero_mesa;
                 tr.appendChild(tdMesa);
 
-                // Produtos
-                const tdProdutos = document.createElement('td');
-                tdProdutos.textContent = produtosTexto;
-                tr.appendChild(tdProdutos);
+                // Produto
+                const tdProduto = document.createElement('td');
+                tdProduto.textContent = pedido.nome;
+                tr.appendChild(tdProduto);
+
+                // Quantidade
+                const tdQuantidade = document.createElement('td');
+                tdQuantidade.textContent = pedido.quantidade;
+                tr.appendChild(tdQuantidade);
 
                 // Status
                 const tdStatus = document.createElement('td');
-                tdStatus.textContent = status;
+                tdStatus.textContent = pedido.status || 'Pendente'; // Assume 'Pendente' se não houver status
                 tr.appendChild(tdStatus);
 
                 // Ações
@@ -189,8 +177,8 @@
                 // Botão para atualizar status
                 const btnStatus = document.createElement('button');
                 btnStatus.className = 'btn btn-encaminhar';
-                btnStatus.textContent = status === 'Encaminhado' ? 'Reverter para Pendente' : 'Encaminhar';
-                btnStatus.onclick = () => atualizarStatus(mesa, status === 'Encaminhado' ? 'Pendente' : 'Encaminhado');
+                btnStatus.textContent = pedido.status === 'Encaminhado' ? 'Reverter para Pendente' : 'Encaminhar';
+                btnStatus.onclick = () => atualizarStatus(pedido.id, pedido.status === 'Encaminhado' ? 'Pendente' : 'Encaminhado');
                 tdAcoes.appendChild(btnStatus);
 
                 // Botão para encerrar comanda
@@ -198,21 +186,21 @@
                 btnEncerrar.className = 'btn btn-encerrar';
                 btnEncerrar.textContent = 'Encerrar Comanda';
                 btnEncerrar.style.marginLeft = '10px';
-                btnEncerrar.onclick = () => encerrarComanda(mesa);
+                btnEncerrar.onclick = () => encerrarComanda(pedido.id);
                 tdAcoes.appendChild(btnEncerrar);
 
                 tr.appendChild(tdAcoes);
 
                 tabelaBody.appendChild(tr);
-            }
+            });
         }
 
-        // Função para atualizar o status de uma mesa
-        async function atualizarStatus(mesa, novoStatus) {
+        // Função para atualizar o status de um pedido
+        async function atualizarStatus(pedidoId, novoStatus) {
             const { data, error } = await supabaseClient
                 .from('itens_pedido')
                 .update({ status: novoStatus })
-                .eq('numero_mesa', mesa);
+                .eq('id', pedidoId);
 
             if (error) {
                 console.error('Erro ao atualizar status:', error);
@@ -220,20 +208,20 @@
                 return;
             }
 
-            alert(`Status da mesa ${mesa} atualizado para "${novoStatus}".`);
+            alert(`Status do pedido atualizado para "${novoStatus}".`);
             carregarPedidos(); // Recarrega os pedidos
         }
 
-        // Função para encerrar a comanda de uma mesa
-        async function encerrarComanda(mesa) {
-            if (!confirm(`Tem certeza que deseja encerrar a comanda da mesa ${mesa}?`)) {
+        // Função para encerrar a comanda de um pedido
+        async function encerrarComanda(pedidoId) {
+            if (!confirm(`Tem certeza que deseja encerrar este pedido?`)) {
                 return;
             }
 
             const { error } = await supabaseClient
                 .from('itens_pedido')
                 .delete()
-                .eq('numero_mesa', mesa);
+                .eq('id', pedidoId);
 
             if (error) {
                 console.error('Erro ao encerrar comanda:', error);
@@ -241,7 +229,7 @@
                 return;
             }
 
-            alert(`Comanda da mesa ${mesa} encerrada com sucesso.`);
+            alert('Pedido encerrado com sucesso.');
             carregarPedidos(); // Recarrega os pedidos
         }
 
