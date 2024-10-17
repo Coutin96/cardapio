@@ -124,6 +124,27 @@
             color: #6c757d;
         }
 
+        /* Estilos para a aba de histórico */
+        #historico-container {
+            display: none; /* Inicialmente oculto */
+            margin-top: 20px;
+        }
+
+        #historico-container table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        #historico-container th, #historico-container td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        #historico-container th {
+            background-color: #343a40;
+            color: white;
+        }
     </style>
 </head>
 <body>
@@ -145,12 +166,28 @@
         <button id="finalizar-pedido">Finalizar Pedido</button>
     </div>
 
-    <p> </p>
-
     <p></p>
 
     <div style="text-align: center;">
         <a href="historico.html"><b>Ver Histórico de Pedidos</b></a>
+    </div>
+
+    <!-- Contêiner para o histórico de pedidos -->
+    <div id="historico-container">
+        <h2>Histórico de Pedidos da Mesa</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Produto</th>
+                    <th>Quantidade</th>
+                    <th>Valor Unitário</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody id="historico-tbody">
+                <!-- Linhas do histórico de pedidos serão inseridas aqui -->
+            </tbody>
+        </table>
     </div>
 
     <footer>
@@ -216,77 +253,122 @@
                 // Incrementa a quantidade do produto
                 produtoExistente.quantidade += 1;
             } else {
-                // Se o produto não existe, adicione-o com quantidade 1
-                const novoProduto = {
-                    id: id,
-                    nome: "Produto " + id, // Lógica para obter o nome do produto deve ser implementada
-                    preco: 10.0, // Lógica para obter o preço do produto deve ser implementada
-                    foto_url: "https://via.placeholder.com/50", // Lógica para obter a imagem do produto deve ser implementada
-                    quantidade: 1
-                };
-                carrinho.push(novoProduto);
+                // Se o produto não estiver no carrinho, adicione-o com quantidade 1
+                const produto = { id, nome: 'Nome do Produto', preco: 10.0, quantidade: 1, foto_url: 'link-para-foto' };
+                carrinho.push(produto);
             }
 
-            // Salva o carrinho no localStorage
-            localStorage.setItem('carrinho', JSON.stringify(carrinho));
-            renderCarrinho(); // Atualiza a renderização do carrinho
+            localStorage.setItem('carrinho', JSON.stringify(carrinho)); // Salva no localStorage
+            renderCarrinho();
         }
 
         // Remove um produto do carrinho
         function removerDoCarrinho(id) {
-            const produtoIndex = carrinho.findIndex(produto => produto.id === id);
+            const produto = carrinho.find(produto => produto.id === id);
 
-            if (produtoIndex > -1) {
-                // Diminui a quantidade ou remove o produto
-                carrinho[produtoIndex].quantidade -= 1;
-
-                if (carrinho[produtoIndex].quantidade <= 0) {
-                    carrinho.splice(produtoIndex, 1);
+            if (produto) {
+                if (produto.quantidade > 1) {
+                    produto.quantidade -= 1; // Decrementa a quantidade
+                } else {
+                    carrinho = carrinho.filter(produto => produto.id !== id); // Remove o produto se a quantidade for 1
                 }
-            }
 
-            // Salva o carrinho no localStorage
-            localStorage.setItem('carrinho', JSON.stringify(carrinho));
-            renderCarrinho(); // Atualiza a renderização do carrinho
+                localStorage.setItem('carrinho', JSON.stringify(carrinho)); // Atualiza o localStorage
+                renderCarrinho();
+            }
         }
 
-        // Finaliza o pedido
-        document.getElementById('finalizar-pedido').onclick = async function() {
-            const mesa = document.getElementById('mesa').value;
+        // Ao carregar a página, renderiza o carrinho
+        document.addEventListener('DOMContentLoaded', renderCarrinho);
 
-            // Verifica se o campo mesa está vazio ou fora do intervalo
-            if (!mesa || mesa < 1 || mesa > 100) {
-                alert('Por favor, insira um número de mesa válido entre 1 e 100.');
+        // Função para finalizar o pedido e salvar no Supabase
+        document.getElementById('finalizar-pedido').addEventListener('click', async function () {
+            const mesa = document.getElementById('mesa').value;
+            if (!mesa) {
+                alert('Por favor, informe o número da mesa!');
                 return;
             }
 
-            // Aqui você deve implementar a lógica para salvar os itens do pedido na tabela 'itens_pedido' no Supabase
-            for (const produto of carrinho) {
-                const { data, error } = await supabaseClient
+            const pedido = {
+                mesa: mesa,
+                itens: carrinho,
+                total: carrinho.reduce((acc, produto) => acc + (produto.preco * produto.quantidade), 0)
+            };
+
+            // Insere os itens do pedido no banco de dados Supabase
+            try {
+                for (const produto of carrinho) {
+                    const { data, error } = await supabaseClient
+                        .from('itens_pedido')
+                        .insert([{
+                            produto_id: produto.id,
+                            numero_mesa: mesa,
+                            quantidade: produto.quantidade,
+                            valor_unitario: produto.preco
+                        }]);
+
+                    if (error) {
+                        console.error('Erro ao salvar pedido:', error.message);
+                    }
+                }
+
+                alert('Pedido finalizado com sucesso!');
+                localStorage.removeItem('carrinho'); // Limpa o carrinho após finalizar o pedido
+                renderCarrinho(); // Atualiza o carrinho na interface
+                exibirHistoricoPedidos(mesa); // Exibe o histórico de pedidos após finalizar
+            } catch (error) {
+                console.error('Erro ao salvar o pedido:', error.message);
+            }
+        });
+
+        // Função para limpar o carrinho
+        document.getElementById('limpar-pedido').addEventListener('click', function () {
+            localStorage.removeItem('carrinho'); // Remove o carrinho do localStorage
+            carrinho = []; // Limpa a variável carrinho
+            renderCarrinho(); // Atualiza o carrinho na interface
+        });
+
+        // Função para exibir o histórico de pedidos
+        async function exibirHistoricoPedidos(mesa) {
+            const historicoContainer = document.getElementById('historico-container');
+            const historicoTbody = document.getElementById('historico-tbody');
+
+            try {
+                // Busca os pedidos da mesa informada no Supabase
+                const { data: pedidos, error } = await supabaseClient
                     .from('itens_pedido')
-                    .insert([
-                        { produto_id: produto.id, numero_mesa: mesa, quantidade: produto.quantidade, valor_unitario: produto.preco }
-                    ]);
+                    .select('produto_id, quantidade, valor_unitario')
+                    .eq('numero_mesa', mesa);
 
                 if (error) {
-                    console.error('Erro ao inserir no banco de dados:', error);
+                    console.error('Erro ao buscar histórico:', error.message);
+                    return;
                 }
+
+                // Limpa o conteúdo atual da tabela
+                historicoTbody.innerHTML = '';
+
+                // Preenche a tabela com os pedidos encontrados
+                pedidos.forEach(pedido => {
+                    const total = pedido.quantidade * pedido.valor_unitario;
+
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${pedido.produto_id}</td>
+                        <td>${pedido.quantidade}</td>
+                        <td>R$ ${pedido.valor_unitario.toFixed(2)}</td>
+                        <td>R$ ${total.toFixed(2)}</td>
+                    `;
+
+                    historicoTbody.appendChild(tr);
+                });
+
+                // Exibe o contêiner do histórico
+                historicoContainer.style.display = 'block';
+            } catch (error) {
+                console.error('Erro ao exibir o histórico:', error.message);
             }
-
-            alert('Pedido finalizado com sucesso!'); // Mensagem de sucesso
-            localStorage.removeItem('carrinho'); // Limpa o carrinho
-            location.reload(); // Atualiza a página
-        };
-
-        // Limpa o carrinho
-        document.getElementById('limpar-pedido').onclick = function() {
-            carrinho = []; // Limpa o array do carrinho
-            localStorage.removeItem('carrinho'); // Limpa o localStorage
-            renderCarrinho(); // Atualiza a renderização do carrinho
-        };
-
-        // Renderiza o carrinho na carga inicial
-        renderCarrinho();
+        }
     </script>
 </body>
 </html>
