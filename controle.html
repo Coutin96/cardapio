@@ -62,14 +62,6 @@
             background-color: #138496;
         }
 
-        .btn-encerrar {
-            background-color: #dc3545;
-        }
-
-        .btn-encerrar:hover {
-            background-color: #c82333;
-        }
-
         /* Estilo do rodapé */
         footer {
             text-align: center;
@@ -181,14 +173,6 @@
                 btnStatus.onclick = () => atualizarStatus(pedido.id, pedido.status === 'Encaminhado' ? 'Pendente' : 'Encaminhado');
                 tdAcoes.appendChild(btnStatus);
 
-                // Botão para encerrar comanda
-                const btnEncerrar = document.createElement('button');
-                btnEncerrar.className = 'btn btn-encerrar';
-                btnEncerrar.textContent = 'Encerrar Comanda';
-                btnEncerrar.style.marginLeft = '10px';
-                btnEncerrar.onclick = () => encerrarComanda(pedido.id);
-                tdAcoes.appendChild(btnEncerrar);
-
                 tr.appendChild(tdAcoes);
 
                 tabelaBody.appendChild(tr);
@@ -209,27 +193,6 @@
             }
 
             alert(`Status do pedido atualizado para "${novoStatus}".`);
-            carregarPedidos(); // Recarrega os pedidos
-        }
-
-        // Função para encerrar a comanda de um pedido
-        async function encerrarComanda(pedidoId) {
-            if (!confirm(`Tem certeza que deseja encerrar este pedido?`)) {
-                return;
-            }
-
-            const { error } = await supabaseClient
-                .from('itens_pedido')
-                .delete()
-                .eq('id', pedidoId);
-
-            if (error) {
-                console.error('Erro ao encerrar comanda:', error);
-                alert('Erro ao encerrar comanda. Verifique o console para mais detalhes.');
-                return;
-            }
-
-            alert('Pedido encerrado com sucesso.');
             carregarPedidos(); // Recarrega os pedidos
         }
 
