@@ -189,7 +189,7 @@
     <script>
         // Inicializa o Supabase
         const supabaseUrl = 'https://chcysijsjivahlaekhlw.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNoY3lzaWpzaml2YWhsYWVraGx3Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcyODk3NzgwNywiZXhwIjoyMDQ0NTUzODA3fQ.vGRBGeF8y-GU2hNeuNu4XW1CSu1Pa0j747UZicUrifM'; // Substitua por sua chave
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNoY3lzaWpzaml2YWhsYWVraGx3Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcyODk3NzgwNywiZXhwIjoyMDQ0NTUzODA3fQ.vGRBGeF8y-GU2hNeuNu4XW1CSu1Pa0j747UZicUrifM';
         const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
         let carrinho = JSON.parse(localStorage.getItem('carrinho')) || [];
@@ -269,22 +269,22 @@
             renderCarrinho();
         }
 
-        document.getElementById('limpar-pedido').addEventListener('click', () => {
-            carrinho = [];
+        function limparCarrinho() {
             localStorage.removeItem('carrinho');
+            carrinho = [];
             renderCarrinho();
-        });
+        }
+
+        document.getElementById('limpar-pedido').addEventListener('click', limparCarrinho);
 
         document.getElementById('finalizar-pedido').addEventListener('click', async () => {
             const mesa = document.getElementById('mesa').value;
-
             if (!mesa) {
-                alert("Por favor, informe o número da mesa.");
+                alert('Informe o número da mesa!');
                 return;
             }
 
-            // Armazenar pedido no Supabase
-            const { data, error } = await supabaseClient
+            const { error } = await supabaseClient
                 .from('itens_pedido')
                 .insert(carrinho.map(produto => ({
                     produto_id: produto.id,
@@ -295,56 +295,59 @@
                 })));
 
             if (error) {
-                console.error('Erro ao finalizar pedido:', error);
+                alert('Erro ao finalizar o pedido: ' + error.message);
             } else {
-                alert("Pedido finalizado com sucesso!");
+                alert('Pedido finalizado com sucesso!');
                 limparCarrinho();
             }
         });
 
-        function limparCarrinho() {
-            carrinho = [];
-            localStorage.removeItem('carrinho');
-            renderCarrinho();
-            document.getElementById('mesa').value = '';
-        }
-
-        // Carregar histórico de pedidos
+        // Função para carregar o histórico de pedidos da mesa
         async function carregarHistoricoPedidos(mesa) {
             const { data, error } = await supabaseClient
                 .from('itens_pedido')
                 .select('*')
                 .eq('numero_mesa', mesa);
 
+            if (error) {
+                alert('Erro ao carregar histórico: ' + error.message);
+                return;
+            }
+
             const historicoContainer = document.getElementById('historico-pedidos');
             historicoContainer.innerHTML = '';
 
-            if (data) {
-                data.forEach(pedido => {
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `
+            data.forEach(pedido => {
+                const valorTotal = pedido.quantidade * pedido.valor_unitario;
+                const row = `
+                    <tr>
                         <td>${pedido.nome}</td>
                         <td>${pedido.quantidade}</td>
                         <td>R$ ${pedido.valor_unitario.toFixed(2)}</td>
-                        <td>R$ ${(pedido.valor_unitario * pedido.quantidade).toFixed(2)}</td>
-                    `;
-                    historicoContainer.appendChild(tr);
-                });
-            } else if (error) {
-                console.error('Erro ao carregar histórico de pedidos:', error);
-            }
+                        <td>R$ ${valorTotal.toFixed(2)}</td>
+                    </tr>
+                `;
+                historicoContainer.innerHTML += row;
+            });
         }
 
-        document.getElementById('mesa').addEventListener('change', (e) => {
-            const mesa = e.target.value;
-            carregarHistoricoPedidos(mesa);
+        // Atualiza o histórico automaticamente quando a mesa é alterada
+        document.getElementById('mesa').addEventListener('change', (event) => {
+            const mesa = event.target.value;
+            if (mesa) {
+                carregarHistoricoPedidos(mesa);
+            }
         });
 
-        // Carregar carrinho ao iniciar a página
         renderCarrinho();
     </script>
-    <footer>
-        <p>© 2024 Seu Nome - Todos os direitos reservados.</p>
-    </footer>
+
+    <p></p>
+
+     <div style="text-align: center;"><a href="catalogo.html"><b>Voltar para o catálogo</b></a></div>
+
+     <footer style="text-align: center;">
+        <p>&copy; 2024 Renan Paim Couto. Todos os direitos reservados.</p>
+     </footer>
 </body>
 </html>
