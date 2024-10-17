@@ -138,13 +138,6 @@
             </div>
         </div>
 
-        <!-- Formulário para remover produtos -->
-        <h1>Remover Produto</h1>
-        <form id="form-remover-produto">
-            <input type="text" id="produto-id" placeholder="ID do Produto" required>
-            <button type="submit">Remover Produto</button>
-        </form>
-
         <p style="text-align: center;"><a href="catalogo.html">Ver Catálogo</a></p>
         
         <footer style="text-align: center;">
@@ -245,33 +238,6 @@
                     alert('Erro ao adicionar produto. Tente novamente.');
                 } else {
                     alert('Produto adicionado com sucesso!');
-                    document.getElementById('form-adicionar-produto').reset(); // Limpa o formulário
-                    document.getElementById('preview').style.display = 'none'; // Oculta a prévia
-                }
-            });
-
-            // Função para remover produto
-            document.getElementById('form-remover-produto').addEventListener('submit', async (e) => {
-                e.preventDefault(); // Impede o envio do formulário
-
-                const produtoId = document.getElementById('produto-id').value;
-
-                if (!produtoId) {
-                    alert('Por favor, insira o ID do produto.');
-                    return;
-                }
-
-                // Remove o produto do banco de dados
-                const { data, error } = await supabaseClient
-                    .from('produtos') // Referência à tabela de produtos
-                    .delete()
-                    .eq('id', produtoId); // Filtra pelo ID do produto
-
-                if (error) {
-                    console.error('Erro ao remover produto:', error);
-                    alert('Erro ao remover produto. Tente novamente.');
-                } else {
-                    alert('Produto removido com sucesso!');
                 }
             });
         });
