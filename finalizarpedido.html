@@ -199,6 +199,11 @@
     <h1>Finalizar Pedido</h1>
     <div class="carrinho" id="carrinho"></div>
 
+    <div class="observacao-container">
+        <label for="observacao">Observação:</label>
+        <textarea id="observacao" placeholder="Adicione alguma observação ao pedido" rows="3"></textarea>
+    </div>
+
     <div class="mesa-container">
         <label for="mesa">Informe a mesa:</label>
         <input type="number" id="mesa" min="1" max="100" placeholder="Número da mesa" required>
@@ -317,7 +322,8 @@
                     nome: produto.nome,
                     numero_mesa: mesa,
                     quantidade: produto.quantidade,
-                    valor_unitario: produto.preco
+                    valor_unitario: produto.preco,
+                    observacao: observacao
                 })));
 
             if (error) {
