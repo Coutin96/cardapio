@@ -62,6 +62,14 @@
             background-color: #dc3545; /* Vermelho para remover */
         }
 
+        .btn-pendente {
+            background-color: #ffc107; /* Amarelo para pendente */
+        }
+
+        .btn-em-andamento {
+            background-color: #28a745; /* Verde para em andamento */
+        }
+
         .menu {
             background-image: linear-gradient(to right, #f3f3c1, #99f3bf, #a973f3);
             padding: 10px 0;
@@ -103,6 +111,14 @@
 
         .btn-remover:hover {
             background-color: #c82333; /* Escurece o vermelho */
+        }
+
+        .btn-pendente:hover {
+            background-color: #e0a800; /* Escurece o amarelo */
+        }
+
+        .btn-em-andamento:hover {
+            background-color: #218838; /* Escurece o verde */
         }
 
         /* Estilo do rodapé */
@@ -154,6 +170,7 @@
             <option value="todos">Todos</option>
             <option value="Pendente">Pendentes</option>
             <option value="Encaminhado">Encaminhados</option>
+            <option value="Em Andamento">Em Andamento</option>
         </select>
     </div>
 
@@ -274,6 +291,24 @@
                 // Ações
                 const tdAcoes = document.createElement('td');
                 
+                // Botão de Pendente
+                const btnPendente = document.createElement('button');
+                btnPendente.textContent = 'Pendente';
+                btnPendente.className = 'btn btn-pendente';
+                btnPendente.onclick = () => {
+                    atualizarStatus(pedido.id, 'Pendente');
+                };
+                tdAcoes.appendChild(btnPendente);
+
+                // Botão de Em Andamento
+                const btnEmAndamento = document.createElement('button');
+                btnEmAndamento.textContent = 'Em Andamento';
+                btnEmAndamento.className = 'btn btn-em-andamento';
+                btnEmAndamento.onclick = () => {
+                    atualizarStatus(pedido.id, 'Em Andamento');
+                };
+                tdAcoes.appendChild(btnEmAndamento);
+
                 // Botão de Encaminhar
                 const btnEncaminhar = document.createElement('button');
                 btnEncaminhar.textContent = 'Encaminhar';
