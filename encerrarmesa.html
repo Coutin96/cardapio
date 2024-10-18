@@ -10,11 +10,26 @@
             font-family: Arial, sans-serif;
             padding: 20px;
             background-color: #f8f9fa;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
         }
 
         h1 {
             text-align: center;
             color: #343a40;
+        }
+
+        label, select, button {
+            display: block;
+            margin: 10px auto;
+        }
+
+        select {
+            padding: 8px;
+            font-size: 16px;
         }
 
         .btn {
@@ -43,6 +58,14 @@
             padding: 15px;
             border-radius: 5px;
             background-color: white;
+            max-width: 600px;
+            text-align: left;
+            margin: 0 auto;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 20px;
         }
     </style>
 </head>
@@ -101,8 +124,13 @@
             let valorTotal = 0;
             let relatorioConteudo = `<strong>Pedidos da Mesa ${numeroMesa}:</strong><br><br>`;
             pedidos.forEach(pedido => {
-                valorTotal += pedido.valor_unitario * pedido.quantidade; // Calcula o valor total
-                relatorioConteudo += `Produto: ${pedido.nome}<br>Quantidade: ${pedido.quantidade}<br>Valor Unitário: R$ ${pedido.valor_unitario.toFixed(2)}<br><br>`;
+                let subtotal = pedido.valor_unitario * pedido.quantidade;
+                valorTotal += subtotal; // Calcula o valor total
+                relatorioConteudo += `
+                    Produto: ${pedido.nome}<br>
+                    Quantidade: ${pedido.quantidade}<br>
+                    Valor Unitário: R$ ${pedido.valor_unitario.toFixed(2)}<br>
+                    Subtotal: R$ ${subtotal.toFixed(2)}<br><br>`;
             });
 
             // Atualiza o relatório com os dados
