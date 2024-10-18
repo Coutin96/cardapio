@@ -9,13 +9,12 @@
         body {
             font-family: Arial, sans-serif;
             padding: 20px;
-            background: linear-gradient(to right, #f5f5ad, #e9fcf1, #c6a3f7);
+            background: linear-gradient(to right, #f5f5ad, #e9fcf1, #c6a3f7); /* Gradiente aplicado */;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
-            box-sizing: border-box;
+            height: 100vh;
         }
 
         h1 {
@@ -25,16 +24,12 @@
 
         label, select, button {
             display: block;
-            width: 100%;
-            max-width: 300px; /* Limita a largura máxima */
             margin: 10px auto;
         }
 
         select {
-            padding: 10px;
+            padding: 8px;
             font-size: 16px;
-            border-radius: 5px;
-            border: 1px solid #ccc;
         }
 
         .btn {
@@ -44,7 +39,6 @@
             border: none;
             border-radius: 5px;
             cursor: pointer;
-            transition: background-color 0.3s;
         }
 
         .btn:hover {
@@ -57,6 +51,7 @@
             display: none;
         }
 
+        /* Estilos para o relatório */
         .relatorio {
             margin-top: 20px;
             border: 1px solid #ddd;
@@ -65,27 +60,25 @@
             background-color: white;
             max-width: 600px;
             text-align: left;
-            width: 100%; /* Ajuste a largura */
+            margin: 0 auto;
         }
 
         .menu {
             background-image: linear-gradient(to right, #f3f3c1, #99f3bf, #a973f3);
             padding: 10px 0;
-            text-align: center;
-            width: 100%;
-            box-sizing: border-box; /* Para incluir o padding no tamanho total */
+            text-align: center; /* Centraliza o texto do menu */
         }
 
         .menu ul {
             list-style-type: none;
             padding: 0;
             margin: 0;
-            display: inline-block;
+            display: inline-block; /* Permite centralizar a lista */
         }
 
         .menu li {
-            display: inline;
-            margin: 0 6px;
+            display: inline; /* Mantém os itens na mesma linha */
+            margin: 0 6px; /* Espaçamento entre os itens */
         }
 
         .menu a {
@@ -95,31 +88,19 @@
         }
 
         .menu img {
-            width: 30px;
+            width: 30px; /* Ajuste o tamanho conforme necessário */
             height: auto;
-            vertical-align: middle;
-            transition: transform 0.3s;
+            vertical-align: middle; /* Alinha a imagem ao centro do texto */
+            transition: transform 0.3s; /* Transição suave */
         }
 
         .menu a:hover img {
-            transform: rotate(360deg) scale(1.1);
+            transform: rotate(360deg) scale(1.1); /* Gira e faz zoom ao passar o mouse */
         }
 
         footer {
             text-align: center;
             margin-top: 20px;
-        }
-
-        /* Media query para telas menores */
-        @media (max-width: 600px) {
-            h1 {
-                font-size: 1.5em; /* Tamanho da fonte para o título */
-            }
-
-            .btn {
-                font-size: 16px; /* Aumenta o tamanho da fonte dos botões */
-                padding: 12px; /* Aumenta o padding para mais conforto ao tocar */
-            }
         }
     </style>
 </head>
@@ -139,7 +120,7 @@
     <h1>Encerrar Mesas</h1>
 
     <div>
-        <label for="mesa">Escolha o número da mesa:</label>
+        <label for="mesa" style="text-align: center;">Escolha o número da mesa:</label>
         <select id="mesa">
             <option value="">Carregando mesas...</option>
         </select>
@@ -158,19 +139,20 @@
     </footer>
 
     <script>
-        // Adiciona a senha para acessar o conteúdo
-        const senhaCorreta = "52"; // Defina a senha aqui
 
-        document.addEventListener('DOMContentLoaded', function() {
-            const senha = prompt("Por favor, insira a senha para acessar:");
+           // Adiciona a senha para acessar o conteúdo
+           const senhaCorreta = "52"; // Defina a senha aqui
 
-            if (senha === senhaCorreta) {
-                document.body.style.display = "block"; // Mostra o conteúdo da página
-            } else {
-                alert("Senha incorreta!");
-                window.location.href = "https://cardapio-two-iota.vercel.app/catalogo.html"; // Redireciona se a senha estiver errada
-            }
-        });
+    document.addEventListener('DOMContentLoaded', function() {
+        const senha = prompt("Por favor, insira a senha para acessar:");
+
+        if (senha === senhaCorreta) {
+        document.body.style.display = "block"; // Mostra o conteúdo da página
+        } else {
+        alert("Senha incorreta!");
+        window.location.href = "https://cardapio-two-iota.vercel.app/catalogo.html"; // Redireciona se a senha estiver errada
+        }
+    });
 
         // Inicializa o Supabase
         const supabaseUrl = 'https://chcysijsjivahlaekhlw.supabase.co';
