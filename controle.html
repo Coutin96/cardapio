@@ -58,10 +58,6 @@
             background-color: #17a2b8;
         }
 
-        .btn-reduzir {
-            background-color: #ffc107; /* Amarelo para reduzir */
-        }
-
         .btn-remover {
             background-color: #dc3545; /* Vermelho para remover */
         }
@@ -103,10 +99,6 @@
 
         .btn-encaminhar:hover {
             background-color: #138496;
-        }
-
-        .btn-reduzir:hover {
-            background-color: #d39e00; /* Escurece o amarelo */
         }
 
         .btn-remover:hover {
@@ -252,125 +244,115 @@
                 inputQuantidade.value = pedido.quantidade;
                 inputQuantidade.min = 1; // Não permitir quantidade menor que 1
                 inputQuantidade.style.width = '60px';
+                inputQuantidade.onchange = () => {
+                    if (inputQuantidade.value < 1) {
+                        alert('A quantidade não pode ser menor que 1.');
+                        inputQuantidade.value = 1; // Resetar para 1 se o valor for menor
+                    }
+                };
+                inputQuantidade.onblur = () => {
+                    if (inputQuantidade.value < 1) {
+                        alert('A quantidade não pode ser menor que 1.');
+                        inputQuantidade.value = 1; // Resetar para 1 se o valor for menor
+                    } else {
+                        atualizarQuantidade(pedido.id, inputQuantidade.value);
+                    }
+                };
                 tdQuantidade.appendChild(inputQuantidade);
                 tr.appendChild(tdQuantidade);
 
                 // Status
                 const tdStatus = document.createElement('td');
-                tdStatus.textContent = pedido.status || 'Pendente'; // Assume 'Pendente' se não houver status
+                tdStatus.textContent = pedido.status;
                 tr.appendChild(tdStatus);
 
                 // Observação
                 const tdObservacao = document.createElement('td');
-                const inputObservacao = document.createElement('input');
-                inputObservacao.type = 'text';
-                inputObservacao.value = pedido.observacao || ''; // Preenche com a observação existente
-                inputObservacao.placeholder = 'Observação';
-                inputObservacao.style.width = '100%'; // Ajusta a largura do campo
-                tdObservacao.appendChild(inputObservacao);
+                tdObservacao.textContent = pedido.observacao;
                 tr.appendChild(tdObservacao);
 
                 // Ações
                 const tdAcoes = document.createElement('td');
+                
+                // Botão de Encaminhar
+                const btnEncaminhar = document.createElement('button');
+                btnEncaminhar.textContent = 'Encaminhar';
+                btnEncaminhar.className = 'btn btn-encaminhar';
+                btnEncaminhar.onclick = () => {
+                    atualizarStatus(pedido.id, 'Encaminhado');
+                };
+                tdAcoes.appendChild(btnEncaminhar);
 
-                // Botão para reduzir a quantidade
-                const btnReduzir = document.createElement('button');
-                btnReduzir.className = 'btn btn-reduzir';
-                btnReduzir.textContent = 'Reduzir';
-                btnReduzir.onclick = () => reduzirQuantidade(pedido.id, inputQuantidade.value);
-                tdAcoes.appendChild(btnReduzir);
-
-                // Botão para remover pedido
+                // Botão de Remover
                 const btnRemover = document.createElement('button');
-                btnRemover.className = 'btn btn-remover';
                 btnRemover.textContent = 'Remover';
-                btnRemover.onclick = () => removerPedido(pedido.id);
+                btnRemover.className = 'btn btn-remover';
+                btnRemover.onclick = () => {
+                    removerPedido(pedido.id);
+                };
                 tdAcoes.appendChild(btnRemover);
 
-                // Botão para atualizar status
-                const btnStatus = document.createElement('button');
-                btnStatus.className = 'btn btn-encaminhar';
-                btnStatus.textContent = pedido.status === 'Encaminhado' ? 'Reverter para Pendente' : 'Encaminhar';
-                btnStatus.onclick = () => atualizarStatus(pedido.id, pedido.status === 'Encaminhado' ? 'Pendente' : 'Encaminhado', inputObservacao.value);
-                tdAcoes.appendChild(btnStatus);
-
                 tr.appendChild(tdAcoes);
-
                 tabelaBody.appendChild(tr);
             });
         }
 
-        // Função para atualizar o status e a observação de um pedido
-        async function atualizarStatus(pedidoId, novoStatus, novaObservacao) {
+        // Função para atualizar a quantidade do pedido
+        async function atualizarQuantidade(id, quantidade) {
             const { data, error } = await supabaseClient
                 .from('itens_pedido')
-                .update({ status: novoStatus, observacao: novaObservacao }) // Atualiza status e observação
-                .eq('id', pedidoId);
+                .update({ quantidade })
+                .eq('id', id);
+
+            if (error) {
+                console.error('Erro ao atualizar quantidade:', error);
+                alert('Erro ao atualizar quantidade. Verifique o console para mais detalhes.');
+            } else {
+                console.log('Quantidade atualizada com sucesso:', data);
+            }
+        }
+
+        // Função para atualizar o status do pedido
+        async function atualizarStatus(id, status) {
+            const { data, error } = await supabaseClient
+                .from('itens_pedido')
+                .update({ status })
+                .eq('id', id);
 
             if (error) {
                 console.error('Erro ao atualizar status:', error);
                 alert('Erro ao atualizar status. Verifique o console para mais detalhes.');
-                return;
+            } else {
+                console.log('Status atualizado com sucesso:', data);
+                carregarPedidos(document.getElementById('filtro-status').value); // Recarregar os pedidos
             }
-
-            alert(`Status do pedido atualizado para "${novoStatus}".`);
-            carregarPedidos(document.getElementById('filtro-status').value); // Recarrega os pedidos
         }
 
-        // Função para reduzir a quantidade de um pedido
-        async function reduzirQuantidade(pedidoId, quantidadeAtual) {
-            const novaQuantidade = parseInt(quantidadeAtual) - 1; // Reduz a quantidade em 1
-            if (novaQuantidade < 1) {
-                alert('A quantidade não pode ser menor que 1.');
-                return;
+        // Função para remover o pedido
+        async function removerPedido(id) {
+            if (confirm('Tem certeza que deseja remover este pedido?')) {
+                const { data, error } = await supabaseClient
+                    .from('itens_pedido')
+                    .delete()
+                    .eq('id', id);
+
+                if (error) {
+                    console.error('Erro ao remover pedido:', error);
+                    alert('Erro ao remover pedido. Verifique o console para mais detalhes.');
+                } else {
+                    console.log('Pedido removido com sucesso:', data);
+                    carregarPedidos(document.getElementById('filtro-status').value); // Recarregar os pedidos
+                }
             }
-
-            const { data, error } = await supabaseClient
-                .from('itens_pedido')
-                .update({ quantidade: novaQuantidade }) // Atualiza a quantidade
-                .eq('id', pedidoId);
-
-            if (error) {
-                console.error('Erro ao reduzir quantidade:', error);
-                alert('Erro ao reduzir quantidade. Verifique o console para mais detalhes.');
-                return;
-            }
-
-            alert(`Quantidade do pedido reduzida para ${novaQuantidade}.`);
-            carregarPedidos(document.getElementById('filtro-status').value); // Recarrega os pedidos
         }
 
-        // Função para remover um pedido
-        async function removerPedido(pedidoId) {
-            const { data, error } = await supabaseClient
-                .from('itens_pedido')
-                .delete() // Remove o pedido
-                .eq('id', pedidoId);
-
-            if (error) {
-                console.error('Erro ao remover pedido:', error);
-                alert('Erro ao remover pedido. Verifique o console para mais detalhes.');
-                return;
-            }
-
-            alert('Pedido removido com sucesso.');
-            carregarPedidos(document.getElementById('filtro-status').value); // Recarrega os pedidos
-        }
-
-        // Carregar os pedidos ao iniciar a página
-        document.addEventListener('DOMContentLoaded', () => {
-            carregarPedidos('todos'); // Carrega todos os pedidos
-
-            // Evento para alterar o filtro
-            document.getElementById('filtro-status').addEventListener('change', (event) => {
-                carregarPedidos(event.target.value);
-            });
+        // Evento de mudança no filtro
+        document.getElementById('filtro-status').addEventListener('change', function() {
+            carregarPedidos(this.value);
         });
 
-        // Atualizar os pedidos a cada 30 segundos
-        setInterval(() => {
-            carregarPedidos(document.getElementById('filtro-status').value);
-        }, 30000);
+        // Carregar pedidos ao iniciar a página
+        carregarPedidos('todos');
     </script>
 </body>
 </html>
