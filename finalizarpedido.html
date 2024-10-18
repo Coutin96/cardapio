@@ -204,6 +204,11 @@
         <input type="number" id="mesa" min="1" max="100" placeholder="Número da mesa" required>
     </div>
 
+    <div class="observacao-container">
+        <label for="observacao">Observação:</label>
+        <input type="text" id="observacao" placeholder="Digite sua observação (opcional)">
+    </div>
+
     <div class="btn-limpar">
         <button id="limpar-pedido">Limpar Pedido</button>
     </div>
@@ -305,6 +310,8 @@
 
         document.getElementById('finalizar-pedido').addEventListener('click', async () => {
             const mesa = document.getElementById('mesa').value;
+            const observacao = document.getElementById('observacao').value; // Captura a observação
+
             if (!mesa) {
                 alert('Informe o número da mesa!');
                 return;
@@ -317,7 +324,9 @@
                     nome: produto.nome,
                     numero_mesa: mesa,
                     quantidade: produto.quantidade,
-                    valor_unitario: produto.preco
+                    valor_unitario: produto.preco,
+                    observacao: observacao, // Armazena a observação
+                    status: 'pendente' // Define o status como "pendente"
                 })));
 
             if (error) {
