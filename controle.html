@@ -10,7 +10,7 @@
         body {
             font-family: Arial, sans-serif;
             padding: 20px;
-            background: linear-gradient(to right, #f5f5ad, #e9fcf1, #c6a3f7); /* Gradiente aplicado */
+            background: linear-gradient(to right, #f5f5ad, #e9fcf1, #c6a3f7);
         }
 
         h1 {
@@ -61,19 +61,19 @@
         .menu {
             background-image: linear-gradient(to right, #f3f3c1, #99f3bf, #a973f3);
             padding: 10px 0;
-            text-align: center; /* Centraliza o texto do menu */
+            text-align: center;
         }
 
         .menu ul {
             list-style-type: none;
             padding: 0;
             margin: 0;
-            display: inline-block; /* Permite centralizar a lista */
+            display: inline-block;
         }
 
         .menu li {
-            display: inline; /* Mantém os itens na mesma linha */
-            margin: 0 6px; /* Espaçamento entre os itens */
+            display: inline;
+            margin: 0 6px;
         }
 
         .menu a {
@@ -83,16 +83,15 @@
         }
 
         .menu img {
-            width: 30px; /* Ajuste o tamanho conforme necessário */
+            width: 30px;
             height: auto;
-            vertical-align: middle; /* Alinha a imagem ao centro do texto */
-            transition: transform 0.3s; /* Transição suave */
+            vertical-align: middle;
+            transition: transform 0.3s;
         }
 
         .menu a:hover img {
-            transform: rotate(360deg) scale(1.1); /* Gira e faz zoom ao passar o mouse */
+            transform: rotate(360deg) scale(1.1);
         }
-
 
         .btn-encaminhar:hover {
             background-color: #138496;
@@ -182,10 +181,10 @@
         const senha = prompt("Por favor, insira a senha para acessar:");
 
         if (senha === senhaCorreta) {
-        document.body.style.display = "block"; // Mostra o conteúdo da página
+            document.body.style.display = "block"; // Mostra o conteúdo da página
         } else {
-        alert("Senha incorreta!");
-        window.location.href = "https://cardapio-two-iota.vercel.app/catalogo.html"; // Redireciona se a senha estiver errada
+            alert("Senha incorreta!");
+            window.location.href = "https://cardapio-two-iota.vercel.app/catalogo.html"; // Redireciona se a senha estiver errada
         }
     });
 
@@ -239,12 +238,17 @@
 
                 // Status
                 const tdStatus = document.createElement('td');
-                tdStatus.textContent = pedido.status; // Assume 'Pendente' se não houver status
+                tdStatus.textContent = pedido.status || 'Pendente'; // Assume 'Pendente' se não houver status
                 tr.appendChild(tdStatus);
 
                 // Observação
                 const tdObservacao = document.createElement('td');
-                tdStatus.textContent = pedido.observacao;
+                const inputObservacao = document.createElement('input');
+                inputObservacao.type = 'text';
+                inputObservacao.value = pedido.observacao || ''; // Preenche com a observação existente
+                inputObservacao.placeholder = 'Observação';
+                inputObservacao.style.width = '100%'; // Ajusta a largura do campo
+                tdObservacao.appendChild(inputObservacao);
                 tr.appendChild(tdObservacao);
 
                 // Ações
@@ -254,7 +258,7 @@
                 const btnStatus = document.createElement('button');
                 btnStatus.className = 'btn btn-encaminhar';
                 btnStatus.textContent = pedido.status === 'Encaminhado' ? 'Reverter para Pendente' : 'Encaminhar';
-                btnStatus.onclick = () => atualizarStatus(pedido.id, pedido.status === 'Encaminhado' ? 'Pendente' : 'Encaminhado');
+                btnStatus.onclick = () => atualizarStatus(pedido.id, pedido.status === 'Encaminhado' ? 'Pendente' : 'Encaminhado', inputObservacao.value);
                 tdAcoes.appendChild(btnStatus);
 
                 tr.appendChild(tdAcoes);
@@ -263,11 +267,11 @@
             });
         }
 
-        // Função para atualizar o status de um pedido
-        async function atualizarStatus(pedidoId, novoStatus) {
+        // Função para atualizar o status e a observação de um pedido
+        async function atualizarStatus(pedidoId, novoStatus, novaObservacao) {
             const { data, error } = await supabaseClient
                 .from('itens_pedido')
-                .update({ status: novoStatus })
+                .update({ status: novoStatus, observacao: novaObservacao }) // Atualiza status e observação
                 .eq('id', pedidoId);
 
             if (error) {
