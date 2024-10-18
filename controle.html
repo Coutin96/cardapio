@@ -159,6 +159,7 @@
                 <th>Produto</th>
                 <th>Quantidade</th>
                 <th>Status</th>
+                <th>Observação</th>
                 <th>Ações</th>
             </tr>
         </thead>
@@ -238,8 +239,13 @@
 
                 // Status
                 const tdStatus = document.createElement('td');
-                tdStatus.textContent = pedido.status || 'Pendente'; // Assume 'Pendente' se não houver status
+                tdStatus.textContent = pedido.status; // Assume 'Pendente' se não houver status
                 tr.appendChild(tdStatus);
+
+                // Observação
+                const tdObservacao = document.createElement('td');
+                tdStatus.textContent = pedido.observacao;
+                tr.appendChild(tdObservacao);
 
                 // Ações
                 const tdAcoes = document.createElement('td');
