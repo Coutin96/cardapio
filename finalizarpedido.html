@@ -10,7 +10,7 @@
         body {
             font-family: Arial, sans-serif;
             padding: 20px;
-            background: linear-gradient(to right, #f5f5ad, #e9fcf1, #c6a3f7); /* Gradiente aplicado */;
+            background: linear-gradient(to right, #f5f5ad, #e9fcf1, #c6a3f7);
         }
 
         h1 {
@@ -50,17 +50,6 @@
             text-decoration: none;
             color: rgb(0, 0, 0);
             font-weight: bold;
-        }
-
-        .menu img {
-            width: 30px;
-            height: auto;
-            vertical-align: middle;
-            transition: transform 0.3s;
-        }
-
-        .menu a:hover img {
-            transform: rotate(360deg) scale(1.1);
         }
 
         .produto-carrinho {
@@ -151,27 +140,38 @@
             background-color: #c82333;
         }
 
-        /* Estilo do campo de observação */
-        .observacao-container {
-            margin: 20px 0;
-            text-align: center;
-        }
-
-        .observacao-container textarea {
-            width: 50%;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            resize: none;
-            margin: auto;
-            font-family: Arial, sans-serif;
-        }
-
         /* Estilo do rodapé */
         footer {
             text-align: center;
             margin-top: 30px;
             color: #6c757d;
+        }
+
+        /* Estilos do histórico de pedidos */
+        .historico-container {
+            margin-top: 40px;
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .historico-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .historico-table th, .historico-table td {
+            padding: 10px;
+            border: 1px solid #ccc;
+            text-align: left;
+        }
+
+        .historico-table th {
+            background-color: #343a40;
+            color: white;
         }
     </style>
 </head>
@@ -179,7 +179,7 @@
 
     <nav class="menu">
         <ul>
-            <li><a href="catalogo.html">Cardapio</a></li>
+            <li><a href="catalogo.html">Cardápio</a></li>
             <li><a href="finalizarpedido.html">Finalizar Pedido</a></li>
             <li><a href="historico.html">Pedidos Feitos</a></li>
         </ul>
@@ -195,7 +195,7 @@
 
     <div class="observacao-container">
         <label for="observacao">Observação:</label>
-        <textarea id="observacao" rows="1" placeholder="Escreva alguma observação sobre o pedido (opcional)..."></textarea>
+        <textarea id="observacao" placeholder="Observações sobre o pedido"></textarea>
     </div>
 
     <div class="btn-limpar">
@@ -209,7 +209,7 @@
     <script>
         // Inicializa o Supabase
         const supabaseUrl = 'https://chcysijsjivahlaekhlw.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNoY3lzaWpzaml2YWhsYWVraGx3Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcyODk3NzgwNywiZXhwIjoyMDQ0NTUzODA7fQ.vGRBGeF8y-GU2hNeuNu4XW1CSu1Pa0j747UZicUrifM';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNoY3lzaWpzaml2YWhsYWVraGx3Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcyODk3NzgwNywiZXhwIjoyMDQ0NTUzODA3fQ.vGRBGeF8y-GU2hNeuNu4XW1CSu1Pa0j747UZicUrifM';
         const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
         let carrinho = JSON.parse(localStorage.getItem('carrinho')) || [];
@@ -276,66 +276,74 @@
 
         function removerDoCarrinho(id) {
             const produtoIndex = carrinho.findIndex(produto => produto.id === id);
-
+            
             if (produtoIndex > -1) {
-                carrinho[produtoIndex].quantidade -= 1;
-                if (carrinho[produtoIndex].quantidade === 0) {
-                    carrinho.splice(produtoIndex, 1);
-                }
-                localStorage.setItem('carrinho', JSON.stringify(carrinho));
-                renderCarrinho();
-            }
-        }
-
-        document.getElementById('limpar-pedido').addEventListener('click', function () {
-            localStorage.removeItem('carrinho');
-            carrinho = [];
-            renderCarrinho();
-        });
-
-        document.getElementById('finalizar-pedido').addEventListener('click', async function () {
-            const mesa = document.getElementById('mesa').value;
-            const observacao = document.getElementById('observacao').value;
-
-            if (!mesa) {
-                alert('Por favor, informe o número da mesa.');
-                return;
-            }
-
-            try {
-                for (const produto of carrinho) {
-                    const { error } = await supabaseClient
-                        .from('itens_pedido')
-                        .insert({
-                            produto_id: produto.id,
-                            nome: produto.nome,
-                            numero_mesa: mesa,
-                            quantidade: produto.quantidade,
-                            valor_unitario: produto.preco,
-                            observacao: observacao
-                        });
-
-                    if (error) {
-                        console.error('Erro ao salvar o pedido:', error);
-                        alert('Erro ao finalizar o pedido. Tente novamente.');
-                        return;
+                    const produto = carrinho[produtoIndex];
+                    if (produto.quantidade > 1) {
+                        produto.quantidade -= 1;
+                    } else {
+                        carrinho.splice(produtoIndex, 1); // Remove o produto se a quantidade for 1
                     }
                 }
 
-                alert('Pedido finalizado com sucesso!');
-                localStorage.removeItem('carrinho');
+                localStorage.setItem('carrinho', JSON.stringify(carrinho));
                 renderCarrinho();
-            } catch (error) {
-                console.error('Erro ao salvar o pedido:', error);
-                alert('Erro ao finalizar o pedido. Tente novamente.');
             }
-        });
 
-        renderCarrinho();
-    </script>
+            document.getElementById('limpar-pedido').addEventListener('click', () => {
+                localStorage.removeItem('carrinho');
+                carrinho = [];
+                renderCarrinho();
+            });
 
-    <footer>
-        <p>&copy; 2024 Seu Restaurante. Todos os direitos reservados.</p>
-    </footer>
-</body>
+            document.getElementById('finalizar-pedido').addEventListener('click', async () => {
+                const numeroMesa = document.getElementById('mesa').value;
+                const observacao = document.getElementById('observacao').value;
+
+                if (!numeroMesa) {
+                    alert("Por favor, informe o número da mesa.");
+                    return;
+                }
+
+                try {
+                    for (const produto of carrinho) {
+                        const { data, error } = await supabaseClient
+                            .from('itens_pedido')
+                            .insert([
+                                {
+                                    produto_id: produto.id,
+                                    nome: produto.nome,
+                                    numero_mesa: numeroMesa,
+                                    quantidade: produto.quantidade,
+                                    valor_unitario: produto.preco,
+                                    observacao: observacao,
+                                    status: 'pendente' // Adiciona o status como pendente
+                                }
+                            ]);
+
+                        if (error) {
+                            console.error("Erro ao salvar o pedido:", error.message);
+                            alert("Houve um erro ao salvar o pedido.");
+                            return;
+                        }
+                    }
+
+                    alert("Pedido finalizado com sucesso!");
+                    localStorage.removeItem('carrinho');
+                    carrinho = [];
+                    renderCarrinho();
+                } catch (error) {
+                    console.error("Erro ao finalizar pedido:", error);
+                    alert("Erro ao finalizar o pedido.");
+                }
+            });
+
+            // Renderiza o carrinho ao carregar a página
+            renderCarrinho();
+        </script>
+
+        <footer>
+            <p>&copy;<b>2024 Renan Paim Couto. Todos os direitos reservados.</b></p>
+        </footer>
+    </body>
 </html>
