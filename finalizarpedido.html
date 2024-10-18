@@ -10,7 +10,7 @@
         body {
             font-family: Arial, sans-serif;
             padding: 20px;
-            background: linear-gradient(to right, #f5f5ad, #e9fcf1, #c6a3f7);
+            background: linear-gradient(to right, #f5f5ad, #e9fcf1, #c6a3f7); /* Gradiente aplicado */;
         }
 
         h1 {
@@ -31,25 +31,36 @@
         .menu {
             background-image: linear-gradient(to right, #f3f3c1, #99f3bf, #a973f3);
             padding: 10px 0;
-            text-align: center;
+            text-align: center; /* Centraliza o texto do menu */
         }
 
         .menu ul {
             list-style-type: none;
             padding: 0;
             margin: 0;
-            display: inline-block;
+            display: inline-block; /* Permite centralizar a lista */
         }
 
         .menu li {
-            display: inline;
-            margin: 0 6px;
+            display: inline; /* Mantém os itens na mesma linha */
+            margin: 0 6px; /* Espaçamento entre os itens */
         }
 
         .menu a {
             text-decoration: none;
             color: rgb(0, 0, 0);
             font-weight: bold;
+        }
+
+        .menu img {
+            width: 30px; /* Ajuste o tamanho conforme necessário */
+            height: auto;
+            vertical-align: middle; /* Alinha a imagem ao centro do texto */
+            transition: transform 0.3s; /* Transição suave */
+        }
+
+        .menu a:hover img {
+            transform: rotate(360deg) scale(1.1); /* Gira e faz zoom ao passar o mouse */
         }
 
         .produto-carrinho {
@@ -179,7 +190,7 @@
 
     <nav class="menu">
         <ul>
-            <li><a href="catalogo.html">Cardápio</a></li>
+            <li><a href="catalogo.html">Cardapio</a></li>
             <li><a href="finalizarpedido.html">Finalizar Pedido</a></li>
             <li><a href="historico.html">Pedidos Feitos</a></li>
         </ul>
@@ -191,11 +202,6 @@
     <div class="mesa-container">
         <label for="mesa">Informe a mesa:</label>
         <input type="number" id="mesa" min="1" max="100" placeholder="Número da mesa" required>
-    </div>
-
-    <div class="observacao-container">
-        <label for="observacao">Observação:</label>
-        <textarea id="observacao" placeholder="Observações sobre o pedido"></textarea>
     </div>
 
     <div class="btn-limpar">
@@ -276,74 +282,94 @@
 
         function removerDoCarrinho(id) {
             const produtoIndex = carrinho.findIndex(produto => produto.id === id);
-            
-            if (produtoIndex > -1) {
-                    const produto = carrinho[produtoIndex];
-                    if (produto.quantidade > 1) {
-                        produto.quantidade -= 1;
-                    } else {
-                        carrinho.splice(produtoIndex, 1); // Remove o produto se a quantidade for 1
-                    }
-                }
 
-                localStorage.setItem('carrinho', JSON.stringify(carrinho));
-                renderCarrinho();
+            if (produtoIndex > -1) {
+                carrinho[produtoIndex].quantidade -= 1;
+
+                if (carrinho[produtoIndex].quantidade <= 0) {
+                    carrinho.splice(produtoIndex, 1);
+                }
             }
 
-            document.getElementById('limpar-pedido').addEventListener('click', () => {
-                localStorage.removeItem('carrinho');
-                carrinho = [];
-                renderCarrinho();
-            });
-
-            document.getElementById('finalizar-pedido').addEventListener('click', async () => {
-                const numeroMesa = document.getElementById('mesa').value;
-                const observacao = document.getElementById('observacao').value;
-
-                if (!numeroMesa) {
-                    alert("Por favor, informe o número da mesa.");
-                    return;
-                }
-
-                try {
-                    for (const produto of carrinho) {
-                        const { data, error } = await supabaseClient
-                            .from('itens_pedido')
-                            .insert([
-                                {
-                                    produto_id: produto.id,
-                                    nome: produto.nome,
-                                    numero_mesa: numeroMesa,
-                                    quantidade: produto.quantidade,
-                                    valor_unitario: produto.preco,
-                                    observacao: observacao,
-                                    status: 'pendente' // Adiciona o status como pendente
-                                }
-                            ]);
-
-                        if (error) {
-                            console.error("Erro ao salvar o pedido:", error.message);
-                            alert("Houve um erro ao salvar o pedido.");
-                            return;
-                        }
-                    }
-
-                    alert("Pedido finalizado com sucesso!");
-                    localStorage.removeItem('carrinho');
-                    carrinho = [];
-                    renderCarrinho();
-                } catch (error) {
-                    console.error("Erro ao finalizar pedido:", error);
-                    alert("Erro ao finalizar o pedido.");
-                }
-            });
-
-            // Renderiza o carrinho ao carregar a página
+            localStorage.setItem('carrinho', JSON.stringify(carrinho));
             renderCarrinho();
-        </script>
+        }
 
-        <footer>
-            <p>&copy;<b>2024 Renan Paim Couto. Todos os direitos reservados.</b></p>
-        </footer>
-    </body>
+        function limparCarrinho() {
+            localStorage.removeItem('carrinho');
+            carrinho = [];
+            renderCarrinho();
+        }
+
+        document.getElementById('limpar-pedido').addEventListener('click', limparCarrinho);
+
+        document.getElementById('finalizar-pedido').addEventListener('click', async () => {
+            const mesa = document.getElementById('mesa').value;
+            if (!mesa) {
+                alert('Informe o número da mesa!');
+                return;
+            }
+
+            const { error } = await supabaseClient
+                .from('itens_pedido')
+                .insert(carrinho.map(produto => ({
+                    produto_id: produto.id,
+                    nome: produto.nome,
+                    numero_mesa: mesa,
+                    quantidade: produto.quantidade,
+                    valor_unitario: produto.preco
+                })));
+
+            if (error) {
+                alert('Erro ao finalizar o pedido: ' + error.message);
+            } else {
+                alert('Pedido finalizado com sucesso!');
+                limparCarrinho();
+            }
+        });
+
+        // Função para carregar o histórico de pedidos da mesa
+        async function carregarHistoricoPedidos(mesa) {
+            const { data, error } = await supabaseClient
+                .from('itens_pedido')
+                .select('*')
+                .eq('numero_mesa', mesa);
+
+            if (error) {
+                alert('Erro ao carregar histórico: ' + error.message);
+                return;
+            }
+
+            const historicoContainer = document.getElementById('historico-pedidos');
+            historicoContainer.innerHTML = '';
+
+            data.forEach(pedido => {
+                const valorTotal = pedido.quantidade * pedido.valor_unitario;
+                const row = `
+                    <tr>
+                        <td>${pedido.nome}</td>
+                        <td>${pedido.quantidade}</td>
+                        <td>R$ ${pedido.valor_unitario.toFixed(2)}</td>
+                        <td>R$ ${valorTotal.toFixed(2)}</td>
+                    </tr>
+                `;
+                historicoContainer.innerHTML += row;
+            });
+        }
+
+        // Atualiza o histórico automaticamente quando a mesa é alterada
+        document.getElementById('mesa').addEventListener('change', (event) => {
+            const mesa = event.target.value;
+            if (mesa) {
+                carregarHistoricoPedidos(mesa);
+            }
+        });
+
+        renderCarrinho();
+    </script>
+    
+    <footer style="text-align: center;">
+        <p>&copy; <b>2024 Renan Paim Couto. Todos os direitos reservados.</b></p>
+     </footer>
+</body>
 </html>
