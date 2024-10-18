@@ -58,6 +58,14 @@
             background-color: #17a2b8;
         }
 
+        .btn-reduzir {
+            background-color: #ffc107; /* Amarelo para reduzir */
+        }
+
+        .btn-remover {
+            background-color: #dc3545; /* Vermelho para remover */
+        }
+
         .menu {
             background-image: linear-gradient(to right, #f3f3c1, #99f3bf, #a973f3);
             padding: 10px 0;
@@ -95,6 +103,14 @@
 
         .btn-encaminhar:hover {
             background-color: #138496;
+        }
+
+        .btn-reduzir:hover {
+            background-color: #d39e00; /* Escurece o amarelo */
+        }
+
+        .btn-remover:hover {
+            background-color: #c82333; /* Escurece o vermelho */
         }
 
         /* Estilo do rodapé */
@@ -172,19 +188,19 @@
 
     <script>
 
-           // Adiciona a senha para acessar o conteúdo
-           const senhaCorreta = "52"; // Defina a senha aqui
+        // Adiciona a senha para acessar o conteúdo
+        const senhaCorreta = "52"; // Defina a senha aqui
 
-    document.addEventListener('DOMContentLoaded', function() {
-        const senha = prompt("Por favor, insira a senha para acessar:");
+        document.addEventListener('DOMContentLoaded', function() {
+            const senha = prompt("Por favor, insira a senha para acessar:");
 
-        if (senha === senhaCorreta) {
-            document.body.style.display = "block"; // Mostra o conteúdo da página
-        } else {
-            alert("Senha incorreta!");
-            window.location.href = "https://cardapio-two-iota.vercel.app/catalogo.html"; // Redireciona se a senha estiver errada
-        }
-    });
+            if (senha === senhaCorreta) {
+                document.body.style.display = "block"; // Mostra o conteúdo da página
+            } else {
+                alert("Senha incorreta!");
+                window.location.href = "https://cardapio-two-iota.vercel.app/catalogo.html"; // Redireciona se a senha estiver errada
+            }
+        });
 
         // Inicializa o Supabase
         const supabaseUrl = 'https://chcysijsjivahlaekhlw.supabase.co';
@@ -231,7 +247,12 @@
 
                 // Quantidade
                 const tdQuantidade = document.createElement('td');
-                tdQuantidade.textContent = pedido.quantidade;
+                const inputQuantidade = document.createElement('input');
+                inputQuantidade.type = 'number';
+                inputQuantidade.value = pedido.quantidade;
+                inputQuantidade.min = 1; // Não permitir quantidade menor que 1
+                inputQuantidade.style.width = '60px';
+                tdQuantidade.appendChild(inputQuantidade);
                 tr.appendChild(tdQuantidade);
 
                 // Status
@@ -251,6 +272,20 @@
 
                 // Ações
                 const tdAcoes = document.createElement('td');
+
+                // Botão para reduzir a quantidade
+                const btnReduzir = document.createElement('button');
+                btnReduzir.className = 'btn btn-reduzir';
+                btnReduzir.textContent = 'Reduzir';
+                btnReduzir.onclick = () => reduzirQuantidade(pedido.id, inputQuantidade.value);
+                tdAcoes.appendChild(btnReduzir);
+
+                // Botão para remover pedido
+                const btnRemover = document.createElement('button');
+                btnRemover.className = 'btn btn-remover';
+                btnRemover.textContent = 'Remover';
+                btnRemover.onclick = () => removerPedido(pedido.id);
+                tdAcoes.appendChild(btnRemover);
 
                 // Botão para atualizar status
                 const btnStatus = document.createElement('button');
@@ -279,6 +314,46 @@
             }
 
             alert(`Status do pedido atualizado para "${novoStatus}".`);
+            carregarPedidos(document.getElementById('filtro-status').value); // Recarrega os pedidos
+        }
+
+        // Função para reduzir a quantidade de um pedido
+        async function reduzirQuantidade(pedidoId, quantidadeAtual) {
+            const novaQuantidade = parseInt(quantidadeAtual) - 1; // Reduz a quantidade em 1
+            if (novaQuantidade < 1) {
+                alert('A quantidade não pode ser menor que 1.');
+                return;
+            }
+
+            const { data, error } = await supabaseClient
+                .from('itens_pedido')
+                .update({ quantidade: novaQuantidade }) // Atualiza a quantidade
+                .eq('id', pedidoId);
+
+            if (error) {
+                console.error('Erro ao reduzir quantidade:', error);
+                alert('Erro ao reduzir quantidade. Verifique o console para mais detalhes.');
+                return;
+            }
+
+            alert(`Quantidade do pedido reduzida para ${novaQuantidade}.`);
+            carregarPedidos(document.getElementById('filtro-status').value); // Recarrega os pedidos
+        }
+
+        // Função para remover um pedido
+        async function removerPedido(pedidoId) {
+            const { data, error } = await supabaseClient
+                .from('itens_pedido')
+                .delete() // Remove o pedido
+                .eq('id', pedidoId);
+
+            if (error) {
+                console.error('Erro ao remover pedido:', error);
+                alert('Erro ao remover pedido. Verifique o console para mais detalhes.');
+                return;
+            }
+
+            alert('Pedido removido com sucesso.');
             carregarPedidos(document.getElementById('filtro-status').value); // Recarrega os pedidos
         }
 
