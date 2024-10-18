@@ -9,20 +9,22 @@
         /* Estilos Globais */
         body {
             font-family: Arial, sans-serif;
-            padding: 20px;
+            padding: 10px;
             background: linear-gradient(to right, #f5f5ad, #e9fcf1, #c6a3f7);
+            margin: 0;
         }
 
         h1 {
             text-align: center;
             color: #343a40;
+            margin-bottom: 20px;
         }
 
         /* Estilos para a tabela */
         .tabela-controle {
             width: 100%;
             max-width: 1000px;
-            margin: 20px auto;
+            margin: 0 auto;
             border-collapse: collapse;
             background: white;
             border-radius: 5px;
@@ -31,9 +33,10 @@
         }
 
         .tabela-controle th, .tabela-controle td {
-            padding: 12px 15px;
+            padding: 12px 10px;
             border: 1px solid #ddd;
             text-align: center;
+            font-size: 14px;
         }
 
         .tabela-controle th {
@@ -47,11 +50,13 @@
 
         /* Estilos para botões */
         .btn {
-            padding: 8px 12px;
+            padding: 6px 10px;
             border: none;
             border-radius: 4px;
             cursor: pointer;
             color: white;
+            font-size: 12px;
+            margin: 2px;
         }
 
         .btn-encaminhar {
@@ -74,17 +79,19 @@
             background-image: linear-gradient(to right, #f3f3c1, #99f3bf, #a973f3);
             padding: 10px 0;
             text-align: center;
+            margin-bottom: 20px;
         }
 
         .menu ul {
             list-style-type: none;
             padding: 0;
             margin: 0;
-            display: inline-block;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
         }
 
         .menu li {
-            display: inline;
             margin: 0 6px;
         }
 
@@ -105,22 +112,6 @@
             transform: rotate(360deg) scale(1.1);
         }
 
-        .btn-encaminhar:hover {
-            background-color: #138496;
-        }
-
-        .btn-remover:hover {
-            background-color: #c82333; /* Escurece o vermelho */
-        }
-
-        .btn-pendente:hover {
-            background-color: #e0a800; /* Escurece o amarelo */
-        }
-
-        .btn-em-andamento:hover {
-            background-color: #218838; /* Escurece o verde */
-        }
-
         /* Estilo do rodapé */
         footer {
             text-align: center;
@@ -138,14 +129,28 @@
         /* Responsividade */
         @media (max-width: 768px) {
             .tabela-controle th, .tabela-controle td {
-                padding: 8px 10px;
-                font-size: 14px;
+                padding: 8px 5px;
+                font-size: 12px;
             }
 
             .btn {
-                padding: 6px 10px;
-                font-size: 14px;
+                padding: 4px 8px;
+                font-size: 10px;
             }
+
+            /* Estilos do filtro */
+            #filtro-status {
+                width: 80%;
+                margin: 10px auto;
+                display: block;
+            }
+        }
+
+        /* Ajuste no estilo do botão de ação */
+        .acoes {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
     </style>
 </head>
