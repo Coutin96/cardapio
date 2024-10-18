@@ -75,12 +75,7 @@
     <div>
         <label for="mesa">Escolha o número da mesa:</label>
         <select id="mesa">
-            <!-- Opções das mesas de 1 a 100 -->
-            <script>
-                for (let i = 1; i <= 100; i++) {
-                    document.write(`<option value="${i}">Mesa ${i}</option>`);
-                }
-            </script>
+            <option value="">Carregando mesas...</option>
         </select>
         <button class="btn" onclick="encerrarMesa()">Encerrar Mesa</button>
     </div>
@@ -104,9 +99,40 @@
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNoY3lzaWpzaml2YWhsYWVraGx3Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcyODk3NzgwNywiZXhwIjoyMDQ0NTUzODA3fQ.vGRBGeF8y-GU2hNeuNu4XW1CSu1Pa0j747UZicUrifM'; // Coloque sua chave aqui
         const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
+        // Função para carregar as mesas com pedidos
+        async function carregarMesas() {
+            const { data: pedidos, error } = await supabaseClient
+                .from('itens_pedido')
+                .select('numero_mesa');
+
+            if (error) {
+                console.error('Erro ao carregar mesas:', error);
+                return;
+            }
+
+            const mesas = [...new Set(pedidos.map(pedido => pedido.numero_mesa))]; // Remove duplicatas
+            const mesaSelect = document.getElementById('mesa');
+            mesaSelect.innerHTML = ''; // Limpa as opções
+
+            if (mesas.length === 0) {
+                mesaSelect.innerHTML = '<option value="">Nenhuma mesa com pedidos</option>';
+            } else {
+                mesas.forEach(mesa => {
+                    mesaSelect.innerHTML += `<option value="${mesa}">Mesa ${mesa}</option>`;
+                });
+            }
+        }
+
+        // Chama a função de carregar mesas ao iniciar a página
+        window.onload = carregarMesas;
+
         // Função para encerrar a mesa
         async function encerrarMesa() {
             const numeroMesa = document.getElementById('mesa').value;
+            if (!numeroMesa) {
+                alert('Selecione uma mesa válida.');
+                return;
+            }
             document.getElementById('loading').style.display = 'block';
 
             // Recupera os pedidos da mesa selecionada
